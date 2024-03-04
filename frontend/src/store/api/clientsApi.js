@@ -1,0 +1,144 @@
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+const BASE_URL = "http://localhost:3000";
+
+export const clientsApi = createApi({
+  reducerPath: "clientsApi",
+
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${BASE_URL}/api`,
+  }),
+
+  endpoints: (builder) => ({
+    createClient: builder.mutation({
+      query(data) {
+        return {
+          url: "clients",
+          method: "POST",
+          body: data,
+        };
+      },
+    }),
+
+    getAllClients: builder.query({
+      query: () => "clients",
+    }),
+
+    updateClient: builder.mutation({
+      query: ({ client_code, data }) => ({
+        url: `clients/${client_code}`,
+        method: "PATCH",
+        body: { client_code, ...data },
+      }),
+    }),
+
+    deleteClient: builder.mutation({
+      query: (id) => ({
+        url: `clients/${id}`,
+        method: "DELETE",
+      }),
+    }),
+
+    getFirstTenClients: builder.query({
+      query: () => ({
+        url: "clients/findFirst10Clients",
+      }),
+    }),
+
+    getLastFifteenClients: builder.query({
+      query: () => ({
+        url: "clients/findLast15Clients",
+      }),
+    }),
+
+    getAveragePayoutToClient: builder.query({
+      query: () => ({
+        url: "clients/averagePayout",
+      }),
+    }),
+
+    getMaxPayoutToClient: builder.query({
+      query: () => ({
+        url: "clients/maxPayout",
+      }),
+    }),
+
+    getMinPayoutToClient: builder.query({
+      query: () => ({
+        url: "clients/minPayout",
+      }),
+    }),
+
+    getClientsWithPayoutBetween: builder.mutation({
+      query: (data) => ({
+        url: "clients/clientsWithPayoutBetween",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    getCountContractsPerClient: builder.query({
+      query: () => ({
+        url: "clients/countContractsPerClient",
+      }),
+    }),
+
+    getFindClientsWithNamesStartingAOrB: builder.query({
+      query: () => ({
+        url: "clients/findClientsWithNamesStartingAOrB",
+      }),
+    }),
+
+    getFindUniqueClientAddress: builder.query({
+      query: () => ({
+        url: "clients/findUniqueClientAddress",
+      }),
+    }),
+
+    getClientById: builder.query({
+      query: (id) => ({
+        url: `clients/${id}`,
+      }),
+    }),
+
+    findClientsByNamePattern: builder.mutation({
+      query: (data) => ({
+        url: "clients/findClientsByNamePattern",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    getFindClientsByAddressAndPassportCriteria: builder.query({
+      query: () => ({
+        url: "clients/findClientsByAddressAndPassportCriteria",
+      }),
+    }),
+
+    getFindClientsWithPhoneNumber: builder.query({
+      query: () => ({
+        url: "clients/findClientsWithPhoneNumber",
+      }),
+    }),
+  }),
+});
+
+export const {
+  useCreateClientMutation,
+  useUpdateClientMutation,
+  useDeleteClientMutation,
+  useGetAllClientsQuery,
+  useGetFirstTenClientsQuery,
+  useGetLastFifteenClientsQuery,
+  useGetAveragePayoutToClientQuery,
+  useGetMaxPayoutToClientQuery,
+  useGetMinPayoutToClientQuery,
+  useGetClientsWithPayoutBetweenMutation,
+  useGetCountContractsPerClientQuery,
+  useGetFindClientsWithNamesStartingAOrBQuery,
+  useGetFindUniqueClientAddressQuery,
+  useGetClientByIdQuery,
+  useFindClientsByNamePatternMutation,
+  useGetFindClientsByAddressAndPassportCriteriaQuery,
+  useGetFindClientsWithPhoneNumberQuery,
+} = clientsApi;

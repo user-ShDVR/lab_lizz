@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model clients {
+  client_code   Int         @id @default(autoincrement())
+  full_name     String      @db.VarChar(100)
+  address       String?     @db.VarChar(255)
+  phone_number  String?     @db.VarChar(20)
+  passport_data String?     @unique @db.VarChar(20)
+  contracts     contracts[]
+}
+
+model contracts {
+  contract_code    Int        @id @default(autoincrement())
+  creation_date    DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  termination_date DateTime?  @db.Date
+  payment_date     DateTime?  @db.Date
+  contract_type    String?    @default("Залог") @db.VarChar(50)
+  payout_to_client Decimal?   @db.Decimal(10, 2)
+  client_code      Int?
+  pledge_code      Int?
+  employee_code    Int?
+  clients          clients?   @relation(fields: [client_code], references: [client_code], onDelete: NoAction, onUpdate: NoAction)
+  employees        employees? @relation(fields: [employee_code], references: [employee_code], onDelete: NoAction, onUpdate: NoAction)
+  pledges          pledges?   @relation(fields: [pledge_code], references: [pledge_code], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model employees {
+  employee_code Int         @id @default(autoincrement())
+  full_name     String      @db.VarChar(100)
+  phone_number  String?     @db.VarChar(20)
+  birth_date    DateTime?   @db.Date
+  position      String?     @db.VarChar(50)
+  address       String?     @db.VarChar(255)
+  contracts     contracts[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model pledges {
+  pledge_code     Int         @id @default(autoincrement())
+  condition       String?     @db.VarChar(50)
+  description     String?
+  characteristics String?
+  price           Decimal?    @db.Decimal(10, 2)
+  contracts       contracts[]
+}
