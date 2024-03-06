@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { PledgesService } from './pledges.service';
+import { PledgesService } from './dto/pledges.service';
 import { CreatePledgeDto } from './dto/create-pledge.dto';
 import { UpdatePledgeDto } from './dto/update-pledge.dto';
 import { ApiTags } from '@nestjs/swagger';

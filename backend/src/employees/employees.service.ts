@@ -61,10 +61,6 @@ export class EmployeesService {
       RETURNING *;
     `;
 
-    if (updatedEmployer.length === 0) {
-      throw new NotFoundException('Employer not found');
-    }
-
     return updatedEmployer[0];
   }
 
@@ -76,19 +72,11 @@ export class EmployeesService {
     `;
 
     if (employer.length > 0) {
-      if (employer[0].contracts.length > 0) {
-        throw new ConflictException(
-          `Работодатель ${employer[0].full_name} имеет активные контракты. Его нельзя удалить. (Сначала удалите контракты, связанные с этим работодателем)`,
-        );
-      }
-
-      const deletedEmployer = await this.db.$queryRaw`
+      await this.db.$queryRaw`
         DELETE FROM employees
         WHERE employee_code = ${id}
         RETURNING *;
       `;
-
-      return `Работодатель ${deletedEmployer[0].full_name} успешно удален, и контракты, связанные с ним, также удалены.`;
     }
 
     throw new NotFoundException(`Работодатель ${id} не найден.`);
@@ -96,8 +84,10 @@ export class EmployeesService {
 
   async findEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth() {
     const today = new Date();
+
     const nextMonth = today.getMonth() + 1;
     const nextMonthYear = today.getFullYear() + (nextMonth === 12 ? 1 : 0);
+
     const formattedDate = `${nextMonthYear}-${String(
       (nextMonth % 12) + 1,
     ).padStart(2, '0')}-01`;

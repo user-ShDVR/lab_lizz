@@ -303,14 +303,14 @@ export const ManagementContracts = () => {
               <Button>Удалить</Button>
             </Popconfirm>
 
-            <Button type="primary">
+            {/* <Button type="primary">
               <Link
                 target="_blank"
                 to={`http://localhost:3000/uploads/${record.contract_code}.pdf`}
               >
                 Экспортировать
               </Link>
-            </Button>
+            </Button> */}
           </ActionsTableWrapper>
         );
       },
