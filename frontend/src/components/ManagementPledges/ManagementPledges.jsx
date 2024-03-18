@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Form, Popconfirm, Button, Input } from "antd";
 import {
   ActionsTableWrapper,
@@ -6,27 +6,26 @@ import {
   StyledTableAnt,
 } from "../../styles/managementTableStyles";
 import {
+  useCreatePledgeMutation,
   useDeletePledgeMutation,
   useGetAllPledgesQuery,
   useUpdatePledgeMutation,
 } from "../../store/api/pledgesApi";
-import { CreatePledge } from "./CreatePledges/CreatePledge";
-import { EditableCell } from "../EditableCell/EditableCell";
+import { EditableCell } from "./EditableCell";
 
 export const ManagementPledges = () => {
-  const [open, setOpen] = React.useState(false);
-  const [searchValue, setSearchValue] = React.useState("");
-
+  const [searchValue, setSearchValue] = useState("");
   const [form] = Form.useForm();
   const { data: pledgesData, refetch } = useGetAllPledgesQuery();
-
   const [updatePledge, { isLoading: isUpdateLoading }] =
     useUpdatePledgeMutation();
-
   const [deletePledge, { isLoading: isDeleteLoading, error }] =
     useDeletePledgeMutation();
+  const [createPledge, { isSuccess: isCreatePledgeSuccess }] =
+    useCreatePledgeMutation();
+  const [editingKey, setEditingKey] = useState("");
+  const [formData, setFormData] = useState({});
 
-  const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
 
   const edit = (record) => {
@@ -53,7 +52,6 @@ export const ManagementPledges = () => {
       } else {
         newData.push(row);
         const item = newData[index];
-
         await updatePledge({ pledge_code: item.pledge_code, data: row });
         setEditingKey("");
       }
@@ -71,6 +69,56 @@ export const ManagementPledges = () => {
       await refetch();
     } catch (error) {
       console.error("Error deleting pledge:", error);
+    }
+  };
+
+  const handleAddNewLine = async () => {
+    try {
+      const newRow = {
+        pledge_code: Math.floor(Math.random() * 1000),
+        condition: null,
+        description: null,
+        characteristics: null,
+        price: null,
+      };
+
+      setEditingKey(newRow.pledge_code);
+      await createPledge(newRow);
+      await refetch();
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
+    }
+  };
+
+  const handleInputChange = async (newCellValues) => {
+    try {
+      const updatedFormData = { ...formData, ...newCellValues };
+      setFormData(updatedFormData);
+
+      const forDelete = pledgesData
+        ?.filter(
+          (obj) => !obj.condition && !obj.description && !obj.characteristics
+        )[0]
+        .pledge_code.toString();
+
+      if (
+        updatedFormData.condition &&
+        updatedFormData.description &&
+        updatedFormData.characteristics
+      ) {
+        await deletePledge(forDelete);
+        await createPledge(updatedFormData);
+        setEditingKey("");
+        await refetch();
+
+        if (isCreatePledgeSuccess) {
+          for (let key in updatedFormData) {
+            updatedFormData[key] = null;
+          }
+        }
+      }
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
     }
   };
 
@@ -157,20 +205,7 @@ export const ManagementPledges = () => {
     },
   ];
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) return col;
-
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: "text",
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
-    };
-  });
+  // Existing code for merged columns, handleSearch, and filteredData...
 
   const handleSearch = (value) => {
     setSearchValue(value);
@@ -187,11 +222,26 @@ export const ManagementPledges = () => {
         );
       })
     : [];
+  const mergedColumns = columns.map((col) => {
+    if (!col.editable) return col;
+
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType: "text",
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record),
+        handleInputChange,
+      }),
+    };
+  });
 
   return (
     <>
       <ManageButtonsWrapper>
-        <Button loading={isDeleteLoading} onClick={() => setOpen(true)}>
+        <Button loading={isDeleteLoading} onClick={handleAddNewLine}>
           Добавить предмет залога
         </Button>
 
@@ -218,8 +268,6 @@ export const ManagementPledges = () => {
           pagination={false}
         />
       </Form>
-
-      <CreatePledge open={open} setOpen={setOpen} refetch={refetch} />
     </>
   );
 };

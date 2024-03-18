@@ -9,15 +9,21 @@ export const EditableCell = ({
   record,
   index,
   children,
+  handleInputChange,
   ...restProps
 }) => {
+  const handleChange = (e) => {
+    const { value } = e.target;
+    handleInputChange({ [dataIndex]: value }, record);
+  };
+
   const node =
     inputType === "number" ? (
       <InputMask mask="+7 (999) 999-99-99" maskChar="_">
         {(inputProps) => <Input {...inputProps} />}
       </InputMask>
     ) : (
-      <Input />
+      <Input onChange={handleChange} />
     );
 
   return (
