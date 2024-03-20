@@ -75,7 +75,7 @@ export const ManagementPledges = () => {
   const handleAddNewLine = async () => {
     try {
       const newRow = {
-        pledge_code: Math.floor(Math.random() * 1000),
+        pledge_code: Math.floor(Math.random() * 100),
         condition: null,
         description: null,
         characteristics: null,
