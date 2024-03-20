@@ -60,6 +60,6 @@ export class PledgesService {
       await this.db.$queryRaw`DELETE FROM pledges WHERE pledge_code = ${id};`;
     }
 
-    throw new NotFoundException(`Товар ${id} не найден.`);
+    throw new NotFoundException(`Договор ${id} не найден.`);
   }
 }
