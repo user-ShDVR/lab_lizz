@@ -31,6 +31,18 @@ export class ContractsController {
     return this.contractsService.findAll(startDate, endDate);
   }
 
+  @ApiTags('Лаба 6.2 Min/Contracts')
+  @Get()
+  findAllMin(@Query('startDate') startDate: Date) {
+    return this.contractsService.findАllMin(startDate);
+  }
+
+  @ApiTags('Лаба 6.2 Max/Contracts')
+  @Get()
+  findAllMax(@Query('startDate') startDate: Date) {
+    return this.contractsService.findАllMax(startDate);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.contractsService.findOne(+id);

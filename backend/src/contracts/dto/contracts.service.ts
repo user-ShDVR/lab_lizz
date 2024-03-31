@@ -12,10 +12,25 @@ export class ContractsService {
   ) {}
 
   async findАll(startDate: Date, endDate: Date) {
-    console.log(startDate, endDate);
     const contracts = await this.db.$queryRaw`
       SELECT * FROM contracts
       WHERE creation_date >= ${startDate} AND creation_date <= ${endDate}
+    `;
+    return contracts;
+  }
+
+  async findАllMin(startDate: Date) {
+    const contracts = await this.db.$queryRaw`
+      SELECT * FROM contracts
+      WHERE creation_date <= ${startDate}
+    `;
+    return contracts;
+  }
+
+  async findАllMax(startDate: Date) {
+    const contracts = await this.db.$queryRaw`
+      SELECT * FROM contracts
+      WHERE creation_date >= ${startDate}
     `;
     return contracts;
   }

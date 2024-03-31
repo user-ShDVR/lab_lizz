@@ -77,10 +77,28 @@ export class ClientsController {
     );
   }
   //6.4
-  @ApiTags('Лаба 6.4')
-  @Get('/findClientsByAddressAndPassportCriteria')
-  findClientsByAddressAndPassportCriteria() {
-    return this.clientsService.findClientsByAddressAndPassportCriteria();
+  @ApiTags('Лаба 6.4 И')
+  @Get('/findClientsWithAddressAndNoPhoneNumber')
+  findClientsWithAddressAndNoPhoneNumber() {
+    return this.clientsService.findClientsWithAddressAndNoPhoneNumber();
+  }
+
+  @ApiTags('Лаба 6.4 ИЛИ')
+  @Get('/findClientsWithAddressOrPhoneNumber')
+  findClientsWithAddressOrPhoneNumber() {
+    return this.clientsService.findClientsWithAddressOrPhoneNumber();
+  }
+
+  @ApiTags('Лаба 6.4 НЕ')
+  @Get('/findClientsWithAddressOrPhoneNumber')
+  findClientsWithoutAddressOrPhoneNumber() {
+    return this.clientsService.findClientsWithoutAddressOrPhoneNumber();
+  }
+
+  @ApiTags('Лаба 6.4 EXISTS')
+  @Post('/exists')
+  exists(@Body() adress: string) {
+    return this.clientsService.Exists(adress);
   }
   //6.5
   @ApiTags('Лаба 6.5')

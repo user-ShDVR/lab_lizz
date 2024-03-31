@@ -186,42 +186,85 @@ export class ClientsService {
               mode: 'insensitive',
             },
           },
+          {
+            passport: {
+              contains: pattern,
+              mode: 'insensitive',
+            },
+          },
         ],
       },
     });
   }
   // 6.4
-  async findClientsByAddressAndPassportCriteria() {
+  async findClientsWithAddressAndNoPhoneNumber() {
     return this.db.clients.findMany({
       where: {
-        OR: [
+        AND: [
           {
-            AND: [
-              {
-                address: {
-                  not: null, // Адрес указан
-                },
-              },
-              {
-                phone_number: null, // Паспортные данные не указаны
-              },
-            ],
+            address: {
+              not: null, // Адрес указан
+            },
           },
           {
-            AND: [
-              {
-                address: null, // Адрес не указан
-              },
-              {
-                phone_number: {
-                  not: null, // Паспортные данные указаны
-                },
-              },
-            ],
+            phone_number: null, // Паспортные данные не указаны
           },
         ],
       },
     });
+  }
+
+  async findClientsWithAddressOrPhoneNumber() {
+    return this.db.clients.findMany({
+      where: {
+        OR: [
+          {
+            address: {
+              not: null, // Адрес указан
+            },
+          },
+          {
+            phone_number: {
+              not: null, // Паспортные данные указаны
+            },
+          },
+        ],
+      },
+    });
+  }
+
+  async findClientsWithoutAddressOrPhoneNumber() {
+    return this.db.clients.findMany({
+      where: {
+        NOT: [
+          {
+            address: null, // Адрес не указан
+            phone_number: null, // Паспортные данные не указаны
+          },
+        ],
+      },
+    });
+  }
+
+  async Exists(address: string) {
+    const clientWithSum = await this.db.clients.findFirst({
+      where: {
+        address,
+      },
+      include: {
+        contracts: {
+          select: {
+            payout_to_client: true,
+          },
+        },
+      },
+    });
+
+    if (!clientWithSum) {
+      throw new NotFoundException('Клиент не найден');
+    }
+
+    return clientWithSum;
   }
   // 6.5
   async findClientsWithPhoneNumber() {
