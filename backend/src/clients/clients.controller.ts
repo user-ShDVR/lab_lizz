@@ -13,6 +13,7 @@ import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ClientsWithPayoutBetweenDto } from './dto/clientsWithPayoutBetween.dto';
 import { FindClientsByNamePatternDto } from './dto/findClientsByNamePattern.dto';
+import { ExistsAddressDto } from './dto/existDTO';
 
 @Controller('clients')
 @ApiTags('Clients')
@@ -97,8 +98,8 @@ export class ClientsController {
 
   @ApiTags('Лаба 6.4 EXISTS')
   @Post('/exists')
-  exists(@Body() adress: string) {
-    return this.clientsService.Exists(adress);
+  exists(@Body() data: ExistsAddressDto) {
+    return this.clientsService.Exists(data.address);
   }
   //6.5
   @ApiTags('Лаба 6.5')
