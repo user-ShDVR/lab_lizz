@@ -90,7 +90,7 @@ export class ClientsController {
   }
 
   @ApiTags('Лаба 6.4 НЕ')
-  @Get('/findClientsWithAddressOrPhoneNumber')
+  @Get('/findClientsWithoutAddressOrPhoneNumber')
   findClientsWithoutAddressOrPhoneNumber() {
     return this.clientsService.findClientsWithoutAddressOrPhoneNumber();
   }
