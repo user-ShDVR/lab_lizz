@@ -33,14 +33,6 @@ export class ContractsService {
     return contracts;
   }
 
-  async findАllMin(startDate: Date) {
-    const contracts = await this.db.$queryRaw`
-      SELECT * FROM contracts
-      WHERE creation_date <= ${startDate}
-    `;
-    return contracts;
-  }
-
   async create(body: CreateContractDto) {
     await Promise.all([
       this.checkIfExists(

@@ -20,6 +20,14 @@ export const contractsApi = createApi({
       },
     }),
 
+    getMoreDateContracts: builder.query({
+      query: ({ startDate }) => `contracts?startDate=${startDate}`,
+    }),
+
+    getLessDateContracts: builder.query({
+      query: ({ startDate }) => `contracts?startDate=${startDate}`,
+    }),
+
     getAllContracts: builder.query({
       query: ({ startDate, endDate }) =>
         `contracts?startDate=${startDate}&endDate=${endDate}`,
@@ -46,5 +54,7 @@ export const {
   useCreateContractMutation,
   useUpdateContractMutation,
   useDeleteContractMutation,
+  useGetMoreDateContractsQuery,
+  useGetLessDateContractsQuery,
   useGetAllContractsQuery,
 } = contractsApi;

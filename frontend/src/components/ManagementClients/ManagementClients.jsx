@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Popconfirm, Button, Input, Modal, Typography } from "antd";
+import { Form, Popconfirm, Button, Input, Modal } from "antd";
 import {
   ActionsTableWrapper,
   ManageButtonsWrapper,
@@ -8,13 +8,17 @@ import {
 import { CreateClient } from "./CreateClients/CreateClient";
 import {
   useDeleteClientMutation,
+  useFindClientsByNamePatternMutation,
   useGetAllClientsQuery,
   useGetAveragePayoutToClientQuery,
   useGetClientByIdQuery,
+  useGetClientsWithDefiniteAddressMutation,
   useGetCountContractsPerClientQuery,
-  useGetFindClientsByAddressAndPassportCriteriaQuery,
+  useGetFindClientsWithAddressAndNoPhoneNumberQuery,
+  useGetFindClientsWithAddressOrPhoneNumberQuery,
   useGetFindClientsWithNamesStartingAOrBQuery,
   useGetFindClientsWithPhoneNumberQuery,
+  useGetFindClientsWithoutAddressOrPhoneNumberQuery,
   useGetFindUniqueClientAddressQuery,
   useGetFirstTenClientsQuery,
   useGetLastFifteenClientsQuery,
@@ -40,8 +44,6 @@ export const ManagementClients = () => {
   const [selectedClientsData, setSelectedData] = useState(null);
   const [chosenClientId, setChosenClientId] = useState("");
 
-  const [searchValue, setSearchValue] = useState("");
-
   const [form] = Form.useForm();
   const { data: clientsData, refetch } = useGetAllClientsQuery();
 
@@ -50,6 +52,8 @@ export const ManagementClients = () => {
 
   const [deleteClient, { isLoading: isDeleteLoading }] =
     useDeleteClientMutation();
+
+  const [findClients] = useFindClientsByNamePatternMutation();
 
   const { data: firstTenClientsData } = useGetFirstTenClientsQuery();
   const { data: lastFifteenClientsData } = useGetLastFifteenClientsQuery();
@@ -69,10 +73,20 @@ export const ManagementClients = () => {
 
   const { data: clientByIdData } = useGetClientByIdQuery(chosenClientId);
 
-  const { data: clientsByAddressAndPassportCriteriaData } =
-    useGetFindClientsByAddressAndPassportCriteriaQuery();
+  const { data: clientsWithAddressAndNoPhoneNumber } =
+    useGetFindClientsWithAddressAndNoPhoneNumberQuery();
 
-  const { data: clientsWithPhoneNumberData } = useGetFindClientsWithPhoneNumberQuery();
+  const { data: clientsWithAddressOrPhoneNumber } =
+    useGetFindClientsWithAddressOrPhoneNumberQuery();
+
+  const { data: clientsWithoutAddressOrPhoneNumber } =
+    useGetFindClientsWithoutAddressOrPhoneNumberQuery();
+
+  const [getClientsWithDefiniteAddress] =
+    useGetClientsWithDefiniteAddressMutation();
+
+  const { data: clientsWithPhoneNumberData } =
+    useGetFindClientsWithPhoneNumberQuery();
 
   const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
@@ -128,6 +142,24 @@ export const ManagementClients = () => {
     }
   };
 
+  const handleSearchClient = async (value) => {
+    try {
+      const searchedClient = await findClients({ pattern: value });
+      handleFetchClientsData(searchedClient.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleGetClientsWithDefiniteAddress = async (value) => {
+    try {
+      const client = await getClientsWithDefiniteAddress({ address: value });
+      handleFetchClientsData(client.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleFetchClientsData = (data) => {
     setSelectedData(data);
     setFetchedRecords([]);
@@ -152,6 +184,21 @@ export const ManagementClients = () => {
       editable: true,
       sorter: (a, b) => a.full_name.localeCompare(b.full_name),
       sortDirections: ["ascend", "descend"],
+      render: (_, record) => {
+        const contractsCount = record?.contracts
+          ? record?.contracts?.length
+          : record?._count.contracts;
+
+        return (
+          <>
+            <span>{record?.full_name}</span>
+            <br />
+            <span>
+              Количество договоров - <b>{contractsCount}</b>
+            </span>
+          </>
+        );
+      },
     },
     {
       title: "Адрес",
@@ -185,11 +232,7 @@ export const ManagementClients = () => {
 
         return editable ? (
           <ActionsTableWrapper>
-            <Button
-              onClick={() => save(record.key)}
-              loading={isUpdateLoading}
-              type="primary"
-            >
+            <Button onClick={() => save(record.key)} loading={isUpdateLoading}>
               Сохранить
             </Button>
 
@@ -202,11 +245,7 @@ export const ManagementClients = () => {
           </ActionsTableWrapper>
         ) : (
           <ActionsTableWrapper>
-            <Button
-              disabled={editingKey !== ""}
-              onClick={() => edit(record)}
-              type="primary"
-            >
+            <Button disabled={editingKey !== ""} onClick={() => edit(record)}>
               <b>(№11) </b>Изменить
             </Button>
 
@@ -239,24 +278,7 @@ export const ManagementClients = () => {
     };
   });
 
-  const handleSearch = (value) => {
-    setSearchValue(value);
-  };
-
-  const filteredData = clientsData
-    ? clientsData.filter((client) => {
-        const searchRegex = new RegExp(searchValue, "i");
-        return (
-          searchRegex.test(client.client.client_code) ||
-          searchRegex.test(client.client.full_name) ||
-          searchRegex.test(client.client.address) ||
-          searchRegex.test(client.client.phone_number) ||
-          searchRegex.test(client.client.passport_data)
-        );
-      })
-    : [];
-
-  const allClientsData = filteredData.map((client) => ({
+  const allClientsData = clientsData?.map((client) => ({
     ...client.client,
     key: client.client.client_code,
   }));
@@ -274,10 +296,7 @@ export const ManagementClients = () => {
   return (
     <>
       <ManageButtonsWrapper>
-        <Button
-          onClick={() => handleFetchClientsData(allClientsData)}
-          type="primary"
-        >
+        <Button onClick={() => handleFetchClientsData(allClientsData)}>
           <b>(№1) </b>Все клиенты
         </Button>
       </ManageButtonsWrapper>
@@ -289,10 +308,7 @@ export const ManagementClients = () => {
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
-        <Button
-          onClick={() => handleFetchClientsData(firstTenClientsData)}
-          type="primary"
-        >
+        <Button onClick={() => handleFetchClientsData(firstTenClientsData)}>
           <b>(№3) </b> Первые 10 клиентов
         </Button>
       </ManageButtonsWrapper>
@@ -304,18 +320,15 @@ export const ManagementClients = () => {
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
-        <Button
-          onClick={() => setIsOpenAveragePayoutModal(true)}
-          type="primary"
-        >
+        <Button onClick={() => setIsOpenAveragePayoutModal(true)}>
           <b>(№5) </b>Средняя выплата клиенту
         </Button>
 
-        <Button onClick={() => setIsOpenMaxPayoutModal(true)} type="primary">
+        <Button onClick={() => setIsOpenMaxPayoutModal(true)}>
           <b>(№5) </b>Максимальная выплата клиенту
         </Button>
 
-        <Button onClick={() => setIsOpenMinPayoutModal(true)} type="primary">
+        <Button onClick={() => setIsOpenMinPayoutModal(true)}>
           <b>(№5) </b>Минимальная выплата клиенту
         </Button>
       </ManageButtonsWrapper>
@@ -334,45 +347,68 @@ export const ManagementClients = () => {
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
-        <Typography.Text>
-          <b>(№6.3) </b>Найти клиента
-        </Typography.Text>
-      </ManageButtonsWrapper>
-
-      <ManageButtonsWrapper>
-        <Input
+        <Input.Search
           placeholder="Найти..."
-          onChange={(e) => handleSearch(e.target.value)}
-          style={{ width: 200 }}
+          allowClear
+          enterButton="(№6.3) Найти клиента"
+          onSearch={handleSearchClient}
+          style={{ width: 370 }}
         />
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
         <Button
           onClick={() =>
-            handleFetchClientsData(clientsByAddressAndPassportCriteriaData)
+            handleFetchClientsData(clientsWithAddressAndNoPhoneNumber)
           }
-          type="primary"
         >
-          <b>(№6.4) </b>Найти клиента с адресом или с номером телефона
+          <b>(№6.4) </b>Найти клиента с адресом но без номера телефона (условие
+          с И)
         </Button>
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
         <Button
           onClick={() =>
-            handleFetchClientsData(clientsWithPhoneNumberData)
+            handleFetchClientsData(clientsWithAddressOrPhoneNumber)
           }
+        >
+          <b>(№6.4) </b>Найти клиента с адресом или с номером телефона (условие
+          с ИЛИ)
+        </Button>
+      </ManageButtonsWrapper>
+
+      <ManageButtonsWrapper>
+        <Button
+          onClick={() =>
+            handleFetchClientsData(clientsWithoutAddressOrPhoneNumber)
+          }
+        >
+          <b>(№6.4) </b>Найти клиента без адреса или без номера телефона
+          (условие с НЕ)
+        </Button>
+      </ManageButtonsWrapper>
+
+      <ManageButtonsWrapper>
+        <Input.Search
+          placeholder="Найти..."
+          allowClear
+          enterButton="(№6.4) Найти клиента с определенным адресом (условие с EXIST)"
+          onSearch={handleGetClientsWithDefiniteAddress}
+          style={{ width: 700 }}
+        />
+      </ManageButtonsWrapper>
+
+      <ManageButtonsWrapper>
+        <Button
+          onClick={() => handleFetchClientsData(clientsWithPhoneNumberData)}
         >
           <b>(№6.5) </b>Найти клиента обязательно с номером телефона
         </Button>
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
-        <Button
-          onClick={() => setIsOpenGetClientsWithPayoutBetweenModal(true)}
-          type="primary"
-        >
+        <Button onClick={() => setIsOpenGetClientsWithPayoutBetweenModal(true)}>
           <b>(№7) </b>Клиенты, которые получили выплаты
         </Button>
       </ManageButtonsWrapper>
@@ -390,7 +426,6 @@ export const ManagementClients = () => {
           onClick={() =>
             handleFetchClientsData(сlientsWithNamesStartingAOrBData)
           }
-          type="primary"
         >
           <b>(№10) </b>Клиенты, у которых имя начинается на "А" или "Б"
         </Button>
@@ -456,10 +491,7 @@ export const ManagementClients = () => {
         open={isOpenAveragePayoutModal}
         onCancel={() => setIsOpenAveragePayoutModal(false)}
         footer={[
-          <Button
-            onClick={() => setIsOpenAveragePayoutModal(false)}
-            type="primary"
-          >
+          <Button onClick={() => setIsOpenAveragePayoutModal(false)}>
             Закрыть
           </Button>,
         ]}
@@ -472,7 +504,7 @@ export const ManagementClients = () => {
         open={isOpenMaxPayoutModal}
         onCancel={() => setIsOpenMaxPayoutModal(false)}
         footer={[
-          <Button onClick={() => setIsOpenMaxPayoutModal(false)} type="primary">
+          <Button onClick={() => setIsOpenMaxPayoutModal(false)}>
             Закрыть
           </Button>,
         ]}
@@ -485,7 +517,7 @@ export const ManagementClients = () => {
         open={isOpenMinPayoutModal}
         onCancel={() => setIsOpenMinPayoutModal(false)}
         footer={[
-          <Button onClick={() => setIsOpenMinPayoutModal(false)} type="primary">
+          <Button onClick={() => setIsOpenMinPayoutModal(false)}>
             Закрыть
           </Button>,
         ]}

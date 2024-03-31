@@ -109,9 +109,29 @@ export const clientsApi = createApi({
       }),
     }),
 
-    getFindClientsByAddressAndPassportCriteria: builder.query({
+    getFindClientsWithAddressAndNoPhoneNumber: builder.query({
       query: () => ({
-        url: "clients/findClientsByAddressAndPassportCriteria",
+        url: "clients/findClientsWithAddressAndNoPhoneNumber",
+      }),
+    }),
+
+    getFindClientsWithAddressOrPhoneNumber: builder.query({
+      query: () => ({
+        url: "clients/findClientsWithAddressOrPhoneNumber",
+      }),
+    }),
+
+    getFindClientsWithoutAddressOrPhoneNumber: builder.query({
+      query: () => ({
+        url: "clients/findClientsWithoutAddressOrPhoneNumber",
+      }),
+    }),
+
+    getClientsWithDefiniteAddress: builder.mutation({
+      query: (data) => ({
+        url: "clients/exists",
+        method: "POST",
+        body: data,
       }),
     }),
 
@@ -139,6 +159,9 @@ export const {
   useGetFindUniqueClientAddressQuery,
   useGetClientByIdQuery,
   useFindClientsByNamePatternMutation,
-  useGetFindClientsByAddressAndPassportCriteriaQuery,
+  useGetFindClientsWithAddressAndNoPhoneNumberQuery,
+  useGetFindClientsWithAddressOrPhoneNumberQuery,
+  useGetFindClientsWithoutAddressOrPhoneNumberQuery,
+  useGetClientsWithDefiniteAddressMutation,
   useGetFindClientsWithPhoneNumberQuery,
 } = clientsApi;

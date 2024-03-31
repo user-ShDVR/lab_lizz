@@ -6,13 +6,14 @@ import {
   StyledTableAnt,
 } from "../../styles/managementTableStyles";
 import { CreateContracts } from "./CreateContracts/CreateContracts";
-import { Link } from "react-router-dom";
 import { useGetAllClientsQuery } from "../../store/api/clientsApi";
 import { useGetAllPledgesQuery } from "../../store/api/pledgesApi";
 import { useGetAllEmployeesQuery } from "../../store/api/employeesApi";
 import {
   useDeleteContractMutation,
   useGetAllContractsQuery,
+  useGetLessDateContractsQuery,
+  useGetMoreDateContractsQuery,
   useUpdateContractMutation,
 } from "../../store/api/contractsApi";
 import { EditableCell } from "../EditableCell/EditableCell";
@@ -21,6 +22,7 @@ import dayjs from "dayjs";
 export const ManagementContracts = () => {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
+  const [form] = Form.useForm();
 
   const [startDate, setStartDate] = React.useState(
     dayjs().startOf("month").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
@@ -29,11 +31,20 @@ export const ManagementContracts = () => {
     dayjs().endOf("month").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
   );
 
-  const [form] = Form.useForm();
-  const { data: contractsData, refetch } = useGetAllContractsQuery({
+  const { data: contractsMoreData } = useGetMoreDateContractsQuery({
     startDate,
-    endDate,
   });
+
+  const { data: contractsLessData } = useGetLessDateContractsQuery({
+    startDate,
+  });
+
+  const { data: contractsBetweenData, refetch: refetchContractsBetweenData } =
+    useGetAllContractsQuery({
+      startDate,
+      endDate,
+    });
+
   const { data: clientsData } = useGetAllClientsQuery();
   const { data: pledgesData } = useGetAllPledgesQuery();
   const { data: employeesData } = useGetAllEmployeesQuery();
@@ -47,10 +58,10 @@ export const ManagementContracts = () => {
   const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
 
-  const edit = (record) => {
-    form.setFieldsValue({ ...record });
-    setEditingKey(record.key);
-  };
+  // const edit = (record) => {
+  //   form.setFieldsValue({ ...record });
+  //   setEditingKey(record.key);
+  // };
 
   const cancel = () => {
     setEditingKey("");
@@ -59,7 +70,7 @@ export const ManagementContracts = () => {
   const save = async (key) => {
     try {
       const row = await form.validateFields();
-      const newData = [...contractsData];
+      const newData = [...contractsBetweenData];
       const index = newData.findIndex((item) => key === item.contract_code);
 
       if (index > -1) {
@@ -67,7 +78,7 @@ export const ManagementContracts = () => {
         await updateContract({ contract_code: item.contract_code, data: row });
 
         setEditingKey("");
-        refetch();
+        refetchContractsBetweenData();
       } else {
         newData.push(row);
         const item = newData[index];
@@ -81,14 +92,14 @@ export const ManagementContracts = () => {
   };
 
   const handleDelete = async (key) => {
-    const dataSource = [...contractsData];
+    const dataSource = [...contractsBetweenData];
     const contractToDelete = dataSource.find(
       (item) => item.contract_code === key
     );
 
     try {
       await deleteContract(contractToDelete.contract_code.toString());
-      await refetch();
+      await refetchContractsBetweenData();
     } catch (error) {
       console.error("Error deleting contract:", error);
     }
@@ -103,8 +114,8 @@ export const ManagementContracts = () => {
     setSearchValue(value);
   };
 
-  const filteredData = contractsData
-    ? contractsData.filter((contract) => {
+  const filteredData = contractsBetweenData
+    ? contractsBetweenData.filter((contract) => {
         const searchRegex = new RegExp(searchValue, "i");
         return (
           searchRegex.test(contract.contract_code) ||
@@ -134,6 +145,19 @@ export const ManagementContracts = () => {
         );
       })
     : [];
+
+  const handleMoreDateContracts = (dates) => {
+    setStartDate(dayjs(dates[0]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
+  };
+
+  const handleLessDateContracts = (dates) => {
+    setStartDate(dayjs(dates[0]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
+  };
+
+  const handleBetweenDateContracts = (dates) => {
+    setStartDate(dayjs(dates[0]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
+    setEndDate(dayjs(dates[1]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
+  };
 
   const columns = [
     {
@@ -348,22 +372,32 @@ export const ManagementContracts = () => {
 
       <ManageButtonsWrapper>
         <Typography.Text>
-          <b>(№6.2) </b>Диапазон договоров по дате
+          <b>(№6.2) </b>Диапазон договоров по дате (условие с больше)
         </Typography.Text>
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
-        <DatePicker.RangePicker
-          onChange={(dates) => {
-            if (dates && dates.length === 2) {
-              setStartDate(
-                dayjs(dates[0]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
-              );
-              setEndDate(dayjs(dates[1]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
-            }
-          }}
-          defaultValue={[dayjs(startDate), dayjs(endDate)]}
-        />
+        <DatePicker onChange={handleMoreDateContracts} />
+      </ManageButtonsWrapper>
+
+      <ManageButtonsWrapper>
+        <Typography.Text>
+          <b>(№6.2) </b>Диапазон договоров по дате (условие с меньше)
+        </Typography.Text>
+      </ManageButtonsWrapper>
+
+      <ManageButtonsWrapper>
+        <DatePicker onChange={handleLessDateContracts} />
+      </ManageButtonsWrapper>
+
+      <ManageButtonsWrapper>
+        <Typography.Text>
+          <b>(№6.2) </b>Диапазон договоров по дате (условие с между)
+        </Typography.Text>
+      </ManageButtonsWrapper>
+
+      <ManageButtonsWrapper>
+        <DatePicker.RangePicker onChange={handleBetweenDateContracts} />
       </ManageButtonsWrapper>
 
       <Form form={form} component={false}>
@@ -383,7 +417,11 @@ export const ManagementContracts = () => {
         />
       </Form>
 
-      <CreateContracts open={open} setOpen={setOpen} refetch={refetch} />
+      <CreateContracts
+        open={open}
+        setOpen={setOpen}
+        refetchContractsBetweenData={refetchContractsBetweenData}
+      />
     </>
   );
 };
