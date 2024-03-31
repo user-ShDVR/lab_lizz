@@ -117,7 +117,7 @@ export class ClientsService {
        OR phone_number LIKE ${'%' + pattern + '%'}
     `;
   }
-  async findClientsByAddressAndPassportCriteria() {
+  async findClientsWithAddressAndNoPhoneNumber() {
     return await this.db.$queryRaw`
     SELECT * FROM clients
     WHERE (address IS NOT NULL AND phone_number IS NULL)

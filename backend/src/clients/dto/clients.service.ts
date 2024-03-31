@@ -187,7 +187,7 @@ export class ClientsService {
             },
           },
           {
-            passport: {
+            passport_data: {
               contains: pattern,
               mode: 'insensitive',
             },
@@ -234,7 +234,7 @@ export class ClientsService {
   }
 
   async findClientsWithoutAddressOrPhoneNumber() {
-    return this.db.clients.findMany({
+    const clients = await this.db.clients.findMany({
       where: {
         NOT: [
           {
@@ -244,10 +244,12 @@ export class ClientsService {
         ],
       },
     });
+
+    return clients.length > 0 ? [clients[0]] : null;
   }
 
   async Exists(address: string) {
-    const clientWithSum = await this.db.clients.findFirst({
+    const clients = await this.db.clients.findMany({
       where: {
         address,
       },
@@ -260,11 +262,11 @@ export class ClientsService {
       },
     });
 
-    if (!clientWithSum) {
+    if (!clients) {
       throw new NotFoundException('Клиент не найден');
     }
 
-    return clientWithSum;
+    return clients.length > 0 ? [clients[0]] : null;
   }
   // 6.5
   async findClientsWithPhoneNumber() {
