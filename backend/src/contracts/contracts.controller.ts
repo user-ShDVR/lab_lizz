@@ -32,13 +32,13 @@ export class ContractsController {
   }
 
   @ApiTags('Лаба 6.2 Min/Contracts')
-  @Get()
+  @Get('min')
   findAllMin(@Query('startDate') startDate: Date) {
     return this.contractsService.findАllMin(startDate);
   }
 
   @ApiTags('Лаба 6.2 Max/Contracts')
-  @Get()
+  @Get('max')
   findAllMax(@Query('startDate') startDate: Date) {
     return this.contractsService.findАllMax(startDate);
   }
