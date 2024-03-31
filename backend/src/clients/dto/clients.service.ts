@@ -187,7 +187,7 @@ export class ClientsService {
             },
           },
           {
-            passport: {
+            passport_data: {
               contains: pattern,
               mode: 'insensitive',
             },
