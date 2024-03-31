@@ -11,19 +11,25 @@ export class ContractsService {
     private genPDF: GeneratePdfService,
   ) {}
 
-  async findАll(startDate: Date, endDate: Date) {
-    const contracts = await this.db.$queryRaw`
-      SELECT * FROM contracts
-      WHERE creation_date >= ${startDate} AND creation_date <= ${endDate}
-    `;
+  async findAllMin(startDate: Date) {
+    const contracts = await this.db.contracts.findMany({
+      where: {
+        creation_date: {
+          lte: startDate,
+        },
+      },
+    });
     return contracts;
   }
 
-  async findАllMax(startDate: Date) {
-    const contracts = await this.db.$queryRaw`
-      SELECT * FROM contracts
-      WHERE creation_date >= ${startDate}
-    `;
+  async findAllMax(startDate: Date) {
+    const contracts = await this.db.contracts.findMany({
+      where: {
+        creation_date: {
+          gte: startDate,
+        },
+      },
+    });
     return contracts;
   }
 
