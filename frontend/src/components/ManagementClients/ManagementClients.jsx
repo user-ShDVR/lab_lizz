@@ -187,7 +187,7 @@ export const ManagementClients = () => {
       render: (_, record) => {
         const contractsCount = record?.contracts
           ? record?.contracts?.length
-          : record?._count.contracts;
+          : record?._count?.contracts;
 
         return (
           <>

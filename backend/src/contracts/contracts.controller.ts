@@ -33,14 +33,16 @@ export class ContractsController {
 
   @ApiTags('Лаба 6.2 Min/Contracts')
   @Get('min')
-  findAllMin(@Query('startDate') startDate: Date) {
-    return this.contractsService.findAllMin(startDate);
+  findAllMin(@Query('payoutAmount') payoutAmount: number) {
+    // Изменение на payoutAmount
+    return this.contractsService.findAllMin(payoutAmount); // Использование payoutAmount
   }
 
   @ApiTags('Лаба 6.2 Max/Contracts')
   @Get('max')
-  findAllMax(@Query('startDate') startDate: Date) {
-    return this.contractsService.findAllMax(startDate);
+  findAllMax(@Query('payoutAmount') payoutAmount: number) {
+    // Изменение на payoutAmount
+    return this.contractsService.findAllMax(payoutAmount); // Использование payoutAmount
   }
 
   @Get(':id')

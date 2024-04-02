@@ -19,13 +19,14 @@ export const contractsApi = createApi({
         };
       },
     }),
-
     getMoreDateContracts: builder.query({
-      query: ({ startDate }) => `contracts?startDate=${startDate}`,
+      query: ({ payoutToClientMore }) =>
+        `contracts/max?payoutAmount=${payoutToClientMore}`,
     }),
 
     getLessDateContracts: builder.query({
-      query: ({ startDate }) => `contracts?startDate=${startDate}`,
+      query: ({ payoutToClientLess }) =>
+        `contracts/min?payoutAmount=${payoutToClientLess}`,
     }),
 
     getAllContracts: builder.query({

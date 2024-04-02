@@ -21,8 +21,13 @@ import dayjs from "dayjs";
 
 export const ManagementContracts = () => {
   const [open, setOpen] = React.useState(false);
-  const [searchValue, setSearchValue] = React.useState("");
   const [form] = Form.useForm();
+
+  const [searchValue, setSearchValue] = React.useState("");
+  const [payoutToClientLess, setPayoutToClientLess] = React.useState(0);
+  const [payoutToClientMore, setPayoutToClientMore] = React.useState(0);
+
+  const [contractsData, setContractsData] = React.useState([]);
 
   const [startDate, setStartDate] = React.useState(
     dayjs().startOf("month").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
@@ -32,11 +37,11 @@ export const ManagementContracts = () => {
   );
 
   const { data: contractsMoreData } = useGetMoreDateContractsQuery({
-    startDate,
+    payoutToClientMore: payoutToClientMore || 0,
   });
 
   const { data: contractsLessData } = useGetLessDateContractsQuery({
-    startDate,
+    payoutToClientLess: payoutToClientLess || 0,
   });
 
   const { data: contractsBetweenData, refetch: refetchContractsBetweenData } =
@@ -114,8 +119,36 @@ export const ManagementContracts = () => {
     setSearchValue(value);
   };
 
-  const filteredData = contractsBetweenData
-    ? contractsBetweenData.filter((contract) => {
+  React.useMemo(() => {
+    let filteredContractsData = [];
+
+    if (contractsBetweenData) {
+      filteredContractsData = contractsBetweenData;
+    }
+
+    if (contractsMoreData && payoutToClientMore !== 0) {
+      filteredContractsData = contractsMoreData.filter(
+        (contract) => contract.payout_to_client > payoutToClientMore
+      );
+    }
+
+    if (contractsLessData && payoutToClientLess !== 0) {
+      filteredContractsData = contractsLessData.filter(
+        (contract) => contract.payout_to_client > payoutToClientLess
+      );
+    }
+
+    setContractsData(filteredContractsData);
+  }, [
+    contractsBetweenData,
+    contractsMoreData,
+    contractsLessData,
+    payoutToClientMore,
+    payoutToClientLess,
+  ]);
+
+  const filteredData = contractsData
+    ? contractsData?.filter((contract) => {
         const searchRegex = new RegExp(searchValue, "i");
         return (
           searchRegex.test(contract.contract_code) ||
@@ -145,14 +178,6 @@ export const ManagementContracts = () => {
         );
       })
     : [];
-
-  const handleMoreDateContracts = (dates) => {
-    setStartDate(dayjs(dates[0]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
-  };
-
-  const handleLessDateContracts = (dates) => {
-    setStartDate(dayjs(dates[0]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
-  };
 
   const handleBetweenDateContracts = (dates) => {
     setStartDate(dayjs(dates[0]).format("YYYY-MM-DDTHH:mm:ss.SSS[Z]"));
@@ -372,22 +397,30 @@ export const ManagementContracts = () => {
 
       <ManageButtonsWrapper>
         <Typography.Text>
-          <b>(№6.2) </b>Диапазон договоров по дате (условие с больше)
+          <b>(№6.2) </b>Договоры, где платеж клиенту больше введенного значения
+          (условие с больше)
         </Typography.Text>
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
-        <DatePicker onChange={handleMoreDateContracts} />
+        <Input
+          onChange={(e) => setPayoutToClientMore(e.target.value)}
+          style={{ width: "200px" }}
+        />
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
         <Typography.Text>
-          <b>(№6.2) </b>Диапазон договоров по дате (условие с меньше)
+          <b>(№6.2) </b>Договоры, где платеж клиенту меньше введенного значения
+          (условие с меньше)
         </Typography.Text>
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
-        <DatePicker onChange={handleLessDateContracts} />
+        <Input
+          onChange={(e) => setPayoutToClientLess(e.target.value)}
+          style={{ width: "200px" }}
+        />
       </ManageButtonsWrapper>
 
       <ManageButtonsWrapper>
@@ -408,7 +441,7 @@ export const ManagementContracts = () => {
             },
           }}
           bordered
-          dataSource={filteredData.map((contract) => ({
+          dataSource={filteredData?.map((contract) => ({
             ...contract,
             key: contract.contract_code,
           }))}

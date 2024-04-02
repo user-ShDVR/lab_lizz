@@ -13,8 +13,8 @@ export const CreateContracts = ({ open, setOpen, refetch }) => {
       const employeeValues = await form.validateFields();
       await createContract(employeeValues);
 
-      refetch();
       setOpen(false);
+      refetch();
     } catch (error) {
       console.error("Validation failed:", error);
     }

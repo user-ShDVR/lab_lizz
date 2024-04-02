@@ -11,22 +11,22 @@ export class ContractsService {
     private genPDF: GeneratePdfService,
   ) {}
 
-  async findAllMin(startDate: Date) {
+  async findAllMin(payoutAmount: number) {
     const contracts = await this.db.contracts.findMany({
       where: {
-        creation_date: {
-          lte: startDate,
+        payout_to_client: {
+          lte: payoutAmount,
         },
       },
     });
     return contracts;
   }
 
-  async findAllMax(startDate: Date) {
+  async findAllMax(payoutAmount: number) {
     const contracts = await this.db.contracts.findMany({
       where: {
-        creation_date: {
-          gte: startDate,
+        payout_to_client: {
+          gte: payoutAmount,
         },
       },
     });
