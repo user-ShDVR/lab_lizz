@@ -258,7 +258,7 @@ export const ManagementContracts = () => {
         const bClient = clientsData?.find(
           (emp) => emp.client_code === b.client_code
         );
-        return (aClient?.full_name || a.client_code).localeCompare(
+        return aClient?.full_name?.localeCompare(
           bClient?.full_name || b.client_code
         );
       },

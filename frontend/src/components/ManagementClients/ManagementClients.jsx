@@ -205,7 +205,7 @@ export const ManagementClients = () => {
       dataIndex: "address",
       width: "20%",
       editable: true,
-      sorter: (a, b) => a.address.localeCompare(b.address),
+      sorter: (a, b) => a.address?.localeCompare(b.address),
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -213,7 +213,7 @@ export const ManagementClients = () => {
       dataIndex: "phone_number",
       width: "15%",
       editable: true,
-      sorter: (a, b) => a.phone_number.localeCompare(b.phone_number),
+      sorter: (a, b) => a.phone_number?.localeCompare(b.phone_number),
       sortDirections: ["ascend", "descend"],
     },
     {

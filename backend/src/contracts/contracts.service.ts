@@ -14,6 +14,22 @@ export class ContractsService {
     private genPDF: GeneratePdfService,
   ) {}
 
+  async findAllMin(payoutAmount: number) {
+    const contracts = await this.db.queryRaw(`
+      SELECT * FROM contracts
+      WHERE payout_to_client <= ${payoutAmount};
+    `);
+    return contracts;
+  }
+  
+  async findAllMax(payoutAmount: number) {
+    const contracts = await this.db.queryRaw(`
+      SELECT * FROM contracts
+      WHERE payout_to_client >= ${payoutAmount};
+    `);
+    return contracts;
+  }
+
   async findАll(startDate: Date, endDate: Date) {
     const contracts = await this.db.$queryRaw`
       SELECT * FROM contracts
