@@ -170,20 +170,21 @@ export const ManagementClients = () => {
       title: "ID клиента",
       dataIndex: "client_code",
       width: "7%",
-      sorter: (a, b) => {
-        const codeA = a.client_code?.toString() || "";
-        const codeB = b.client_code?.toString() || "";
-        return codeA.localeCompare(codeB);
+      sorter: {
+        compare: (a, b) =>
+          a.client_code.toString().localeCompare(b.client_code.toString()),
+        multiple: 5,
       },
-      sortDirections: ["ascend", "descend"],
     },
     {
       title: "ФИО",
       dataIndex: "full_name",
       width: "20%",
       editable: true,
-      sorter: (a, b) => a.full_name.localeCompare(b.full_name),
-      sortDirections: ["ascend", "descend"],
+      sorter: {
+        compare: (a, b) => a.full_name.localeCompare(b.full_name),
+        multiple: 4,
+      },
       render: (_, record) => {
         const contractsCount = record?.contracts
           ? record?.contracts?.length
@@ -205,15 +206,21 @@ export const ManagementClients = () => {
       dataIndex: "address",
       width: "20%",
       editable: true,
-      sorter: (a, b) => a.address?.localeCompare(b.address),
-      sortDirections: ["ascend", "descend"],
+      sorter: {
+        compare: (a, b) => a.address - b.address,
+        multiple: 3,
+      },
     },
     {
       title: "Номер телефона",
       dataIndex: "phone_number",
       width: "15%",
       editable: true,
-      sorter: (a, b) => a.phone_number?.localeCompare(b.phone_number),
+      sorter: {
+        compare: (a, b) =>
+          a.phone_number.toString().localeCompare(b.phone_number.toString()),
+        multiple: 2,
+      },
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -221,8 +228,10 @@ export const ManagementClients = () => {
       dataIndex: "passport_data",
       width: "17%",
       editable: true,
-      sorter: (a, b) => a.passport_data.localeCompare(b.passport_data),
-      sortDirections: ["ascend", "descend"],
+      sorter: {
+        compare: (a, b) => a.passport_data - b.passport_data,
+        multiple: 1,
+      },
     },
     {
       title: "Действия",
