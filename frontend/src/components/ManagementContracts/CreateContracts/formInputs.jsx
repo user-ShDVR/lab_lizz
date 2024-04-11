@@ -23,68 +23,24 @@ export const FormInputs = () => {
 
   const formInputs = [
     {
-      label: "Дата расторжения",
-      name: "termination_date",
+      label: "Сумма кредита",
+      name: "contract_amount",
       rules: [
         {
           required: true,
-          message: "Пожалуйста, введите дату расторжения договора!",
+          message: "Пожалуйста, введите сумму кредита!",
         },
       ],
-      node: (
-        <DatePicker
-          format="YYYY-MM-DD"
-          locale={locale}
-          style={{ width: "100%" }}
-        />
-      ),
+      node: <Input />,
     },
+
     {
-      label: "Дата платежа",
-      name: "payment_date",
+      label: "Срок кредита",
+      name: "contract_term",
       rules: [
         {
           required: true,
-          message: "Пожалуйста, введите дату платежа клиенту!",
-        },
-      ],
-      node: (
-        <DatePicker
-          format="YYYY-MM-DD"
-          locale={locale}
-          style={{ width: "100%" }}
-        />
-      ),
-    },
-    {
-      label: "Тип договора",
-      name: "contract_type",
-      rules: [
-        {
-          required: true,
-          message: "Пожалуйста, введите дату платежа клиенту!",
-        },
-      ],
-      node: (
-        <Select>
-          {contract_typeOptions?.map((contract_type) => (
-            <Select.Option
-              key={contract_type.value}
-              value={contract_type.value}
-            >
-              {contract_type.label}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
-    },
-    {
-      label: "Платеж клиенту",
-      name: "payout_to_client",
-      rules: [
-        {
-          required: true,
-          message: "Пожалуйста, введите сумму платежа клиенту!",
+          message: "Пожалуйста, введите срок кредита!",
         },
       ],
       node: <Input />,
@@ -99,40 +55,40 @@ export const FormInputs = () => {
         },
       ],
       options: clientsData?.map((client) => ({
-        label: client.full_name,
+        label: client.surname,
         value: client.client_code,
       })),
       node: (
         <Select>
           {clientsData?.map((client) => (
             <Select.Option
-              key={client.client.client_code}
-              value={client.client.client_code}
+              key={client.client_code}
+              value={client.client_code}
             >
-              {client.client.full_name}
+              {client.surname} {client.name} {client.lastname}
             </Select.Option>
           ))}
         </Select>
       ),
     },
     {
-      label: "Предмет залога",
-      name: "pledge_code",
+      label: "Кредит",
+      name: "credit_code",
       rules: [
         {
           required: true,
-          message: "Пожалуйста, введите предмет залога!",
+          message: "Пожалуйста, введите кредит!",
         },
       ],
       options: pledgesData?.map((pledge) => ({
-        label: pledge.description,
-        value: pledge.pledge_code,
+        label: pledge.credit_name,
+        value: pledge.credit_code,
       })),
       node: (
         <Select>
           {pledgesData?.map((pledge) => (
-            <Select.Option key={pledge.pledge_code} value={pledge.pledge_code}>
-              {pledge.description}
+            <Select.Option key={pledge.credit_code} value={pledge.credit_code}>
+              {pledge.credit_name}
             </Select.Option>
           ))}
         </Select>
@@ -148,7 +104,7 @@ export const FormInputs = () => {
         },
       ],
       options: employeesData?.map((employee) => ({
-        label: employee.full_name,
+        label: employee.surname,
         value: employee.employee_code,
       })),
       node: (
@@ -158,7 +114,7 @@ export const FormInputs = () => {
               key={employee.employee_code}
               value={employee.employee_code}
             >
-              {employee.full_name}
+              {employee.surname} {employee.name} {employee.lastname}
             </Select.Option>
           ))}
         </Select>

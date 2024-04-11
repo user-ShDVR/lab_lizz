@@ -13,7 +13,7 @@ export const pledgesApi = createApi({
     createPledge: builder.mutation({
       query(data) {
         return {
-          url: "pledges",
+          url: "credit",
           method: "POST",
           body: data,
         };
@@ -21,20 +21,20 @@ export const pledgesApi = createApi({
     }),
 
     getAllPledges: builder.query({
-      query: () => "pledges",
+      query: () => "credit",
     }),
 
     updatePledge: builder.mutation({
-      query: ({ pledge_code, data }) => ({
-        url: `pledges/${pledge_code}`,
+      query: ({ credit_code, data }) => ({
+        url: `credit/${credit_code}`,
         method: "PATCH",
-        body: { pledge_code, ...data },
+        body: { credit_code, ...data },
       }),
     }),
 
     deletePledge: builder.mutation({
       query: (id) => ({
-        url: `pledges/${id}`,
+        url: `credit/${id}`,
         method: "DELETE",
       }),
     }),

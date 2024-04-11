@@ -19,10 +19,7 @@ export const ManagementEmployees = () => {
   const [isOpenCreateEmployeeModal, setIsOpenCreateEmployeeModal] =
     React.useState(false);
 
-  const [
-    isOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal,
-    setIsOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal,
-  ] = React.useState(false);
+
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -116,12 +113,34 @@ export const ManagementEmployees = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "ФИО",
-      dataIndex: "full_name",
-      width: "14%",
+      title: "Фамилия",
+      dataIndex: "surname",
+      width: "10%",
       editable: true,
-      sorter: (a, b) => a.full_name.localeCompare(b.full_name),
-      sortDirections: ["ascend", "descend"],
+      sorter: {
+        compare: (a, b) => a.surname - b.surname,
+        multiple: 8,
+      },
+    },
+    {
+      title: "Имя",
+      dataIndex: "name",
+      width: "10%",
+      editable: true,
+      sorter: {
+        compare: (a, b) => a.name.localeCompare(b.name),
+        multiple: 7,
+      },
+    },
+    {
+      title: "Отчество",
+      dataIndex: "lastname",
+      width: "10%",
+      editable: true,
+      sorter: {
+        compare: (a, b) => a.lastname - b.lastname,
+        multiple: 6,
+      },
     },
     {
       title: "Номер телефона",
@@ -132,28 +151,11 @@ export const ManagementEmployees = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "День рождения",
-      dataIndex: "birth_date",
-      width: "14%",
-      editable: true,
-      render: (date) => formatDate(date),
-      sorter: (a, b) => a.birth_date.localeCompare(b.birth_date),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
       title: "Должность",
       dataIndex: "position",
       width: "14%",
       editable: true,
       sorter: (a, b) => a.position.localeCompare(b.position),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Адрес",
-      dataIndex: "address",
-      width: "14%",
-      editable: true,
-      sorter: (a, b) => a.address.localeCompare(b.address),
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -233,21 +235,6 @@ export const ManagementEmployees = () => {
         />
       </ManageButtonsWrapper>
 
-      <ManageButtonsWrapper>
-        <Button
-          loading={isDeleteLoading}
-          onClick={() =>
-            setIsOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal(
-              true
-            )
-          }
-          type="primary"
-        >
-          <b>(№14) </b>Сотрудники, которые в следующем месяце будут отмечать
-          юбилей
-        </Button>
-      </ManageButtonsWrapper>
-
       <Form form={form} component={false}>
         <StyledTableAnt
           components={{
@@ -271,14 +258,6 @@ export const ManagementEmployees = () => {
         refetch={refetch}
       />
 
-      <GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth
-        open={
-          isOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal
-        }
-        setOpen={
-          setIsOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal
-        }
-      />
     </>
   );
 };

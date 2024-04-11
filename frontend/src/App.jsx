@@ -18,7 +18,7 @@ function App() {
     },
     {
       key: "pledges",
-      label: "Предметы залога",
+      label: "Кредиты",
       children: <ManagementPledges />,
     },
     {

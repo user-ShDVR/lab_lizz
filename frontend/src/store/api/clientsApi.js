@@ -140,6 +140,13 @@ export const clientsApi = createApi({
         url: "clients/findClientsWithPhoneNumber",
       }),
     }),
+
+    getFindClientsCelebratingEveryFiveYearsAnniversaryNextMonth:
+      builder.query({
+        query: () => ({
+          url: "clients/findClientsCelebratingEveryFiveYearsAnniversaryNextMonth",
+        }),
+      }),
   }),
 });
 
@@ -164,4 +171,5 @@ export const {
   useGetFindClientsWithoutAddressOrPhoneNumberQuery,
   useGetClientsWithDefiniteAddressMutation,
   useGetFindClientsWithPhoneNumberQuery,
+  useGetFindClientsCelebratingEveryFiveYearsAnniversaryNextMonthQuery,
 } = clientsApi;

@@ -21,7 +21,9 @@ async function bootstrap() {
     app,
     SwaggerModule.createDocument(app, documentConfig),
   );
-  app.useGlobalPipes(new ValidationPipe());
+
+  app.useGlobalPipes(new ValidationPipe({ stopAtFirstError: true }));
+
   await app.listen(3000, () => {
     console.log('Service start on http://localhost:3000/api');
     console.log('Swagger start on http://localhost:3000/docs');

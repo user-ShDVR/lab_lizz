@@ -39,12 +39,6 @@ export const employeesApi = createApi({
       }),
     }),
 
-    getFindEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth:
-      builder.query({
-        query: () => ({
-          url: "employees/findEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth",
-        }),
-      }),
   }),
 });
 
@@ -53,5 +47,4 @@ export const {
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
   useGetAllEmployeesQuery,
-  useGetFindEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthQuery,
 } = employeesApi;

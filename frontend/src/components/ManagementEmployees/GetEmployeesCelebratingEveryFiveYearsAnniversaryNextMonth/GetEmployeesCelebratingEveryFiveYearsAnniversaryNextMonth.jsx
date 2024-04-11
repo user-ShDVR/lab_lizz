@@ -1,20 +1,28 @@
 import React from "react";
 import { Button, Modal } from "antd";
 import { StyledTableAnt } from "../../../styles/managementTableStyles";
-import { useGetFindEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthQuery } from "../../../store/api/employeesApi";
 import { formatDate } from "../utils/formatDate";
+import { useGetFindClientsCelebratingEveryFiveYearsAnniversaryNextMonthQuery } from "../../../store/api/clientsApi";
 
 export const GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth = ({
   open,
   setOpen,
 }) => {
   const { data: employeesCelebratingEveryFiveYearsAnniversaryNextMonth } =
-    useGetFindEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthQuery();
+    useGetFindClientsCelebratingEveryFiveYearsAnniversaryNextMonthQuery();
 
   const columns = [
+     {
+      title: "Фамилия",
+      dataIndex: "surname",
+    },
     {
-      title: "ФИО",
-      dataIndex: "full_name",
+      title: "Имя",
+      dataIndex: "name",
+    },
+    {
+      title: "Отчество",
+      dataIndex: "lastname",
     },
     {
       title: "Возраст",
@@ -22,7 +30,7 @@ export const GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth = ({
     },
     {
       title: "Дата рождения",
-      dataIndex: "birth_date",
+      dataIndex: "birthday",
       render: (date) => formatDate(date),
     },
     {
@@ -34,7 +42,7 @@ export const GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth = ({
 
   return (
     <Modal
-      title="Сотрудники, которые в следующем месяце будут отмечать
+      title="Клиенты, которые в следующем месяце будут отмечать
       юбилей"
       open={open}
       onCancel={() => setOpen(false)}

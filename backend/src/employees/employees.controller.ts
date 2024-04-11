@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { EmployeesService } from './dto/employees.service';
+import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -25,11 +25,6 @@ export class EmployeesController {
   @Get()
   findAll() {
     return this.employeesService.findAll();
-  }
-  @ApiTags('Лаба14/Employees')
-  @Get('findEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth')
-  findEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth() {
-    return this.employeesService.findEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth();
   }
 
   @Get(':id')

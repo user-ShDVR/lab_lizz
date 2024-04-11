@@ -41,18 +41,18 @@ export const ManagementPledges = () => {
     try {
       const row = await form.validateFields();
       const newData = [...pledgesData];
-      const index = newData.findIndex((item) => key === item.pledge_code);
+      const index = newData.findIndex((item) => key === item.credit_code);
 
       if (index > -1) {
         const item = newData[index];
-        await updatePledge({ pledge_code: item.pledge_code, data: row });
+        await updatePledge({ credit_code: item.credit_code, data: {...row, max_credit_term: +row.max_credit_term, min_credit_term: +row.min_credit_term, interest_rate: +row.interest_rate, min_amount: +row.min_amount, max_amount: +row.max_amount} });
 
         setEditingKey("");
         refetch();
       } else {
         newData.push(row);
         const item = newData[index];
-        await updatePledge({ pledge_code: item.pledge_code, data: row });
+        await updatePledge({ credit_code: item.credit_code, data: {...row, max_credit_term: +row.max_credit_term, min_credit_term: +row.min_credit_term, interest_rate: +row.interest_rate, min_amount: +row.min_amount, max_amount: +row.max_amount} });
         setEditingKey("");
       }
     } catch (errInfo) {
@@ -62,10 +62,10 @@ export const ManagementPledges = () => {
 
   const handleDelete = async (key) => {
     const dataSource = [...pledgesData];
-    const pledgeToDelete = dataSource.find((item) => item.pledge_code === key);
+    const pledgeToDelete = dataSource.find((item) => item.credit_code === key);
 
     try {
-      await deletePledge(pledgeToDelete.pledge_code.toString());
+      await deletePledge(pledgeToDelete.credit_code.toString());
       await refetch();
     } catch (error) {
       console.error("Error deleting pledge:", error);
@@ -75,14 +75,15 @@ export const ManagementPledges = () => {
   const handleAddNewLine = async () => {
     try {
       const newRow = {
-        pledge_code: Math.floor(Math.random() * 100),
-        condition: null,
-        description: null,
-        characteristics: null,
-        price: null,
+        credit_name: "Наименование кредита",
+        min_amount: 1000,
+        max_amount: 100000,
+        min_credit_term: 12,
+        max_credit_term: 36,
+        interest_rate: 6,
       };
 
-      setEditingKey(newRow.pledge_code);
+      setEditingKey(newRow.credit_name);
       await createPledge(newRow);
       await refetch();
     } catch (errInfo) {
@@ -99,7 +100,7 @@ export const ManagementPledges = () => {
         ?.filter(
           (obj) => !obj.condition && !obj.description && !obj.characteristics
         )[0]
-        .pledge_code.toString();
+        .credit_code.toString();
 
       if (
         updatedFormData.condition &&
@@ -124,12 +125,12 @@ export const ManagementPledges = () => {
 
   const columns = [
     {
-      title: "ID предмета залога",
-      dataIndex: "pledge_code",
+      title: "ID кредита",
+      dataIndex: "credit_code",
       width: "15%",
       sorter: (a, b) => {
-        if (!isNaN(Number(a.pledge_code)) && !isNaN(Number(b.pledge_code))) {
-          return Number(a.pledge_code) - Number(b.pledge_code);
+        if (!isNaN(Number(a.credit_code)) && !isNaN(Number(b.credit_code))) {
+          return Number(a.credit_code) - Number(b.credit_code);
         } else {
           return 0; // Handle non-numeric values appropriately
         }
@@ -137,28 +138,55 @@ export const ManagementPledges = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Состояние",
-      dataIndex: "condition",
+      title: "Название кредита",
+      dataIndex: "credit_name",
       width: "20%",
       editable: true,
       sorter: (a, b) => a.condition.localeCompare(b.condition),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Название",
-      dataIndex: "description",
+      title: "Минимальная сумма кредита",
+      dataIndex: "min_amount",
       width: "22%",
       editable: true,
       sorter: (a, b) => a.description.localeCompare(b.description),
       sortDirections: ["ascend", "descend"],
+      render: (value) => `${value} ₽`,
     },
     {
-      title: "Характеристики",
-      dataIndex: "characteristics",
+      title: "Максимальная сумма кредита",
+      dataIndex: "max_amount",
       width: "20%",
       editable: true,
       sorter: (a, b) => a.characteristics.localeCompare(b.characteristics),
       sortDirections: ["ascend", "descend"],
+      render: (value) => `${value} ₽`,
+    },
+    {
+      title: "Минимальный срок кредита(в месяцах)",
+      dataIndex: "min_credit_term",
+      width: "20%",
+      editable: true,
+      sorter: (a, b) => a.characteristics.localeCompare(b.characteristics),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "Максимальный срок кредита(в месяцах)",
+      dataIndex: "max_credit_term",
+      width: "20%",
+      editable: true,
+      sorter: (a, b) => a.characteristics.localeCompare(b.characteristics),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "Процентная ставка",
+      dataIndex: "interest_rate",
+      width: "20%",
+      editable: true,
+      sorter: (a, b) => a.characteristics.localeCompare(b.characteristics),
+      sortDirections: ["ascend", "descend"],
+      render: (value) => `${value}%`,
     },
     {
       title: "Действия",
@@ -186,7 +214,6 @@ export const ManagementPledges = () => {
         ) : (
           <ActionsTableWrapper>
             <Button
-              disabled={editingKey !== ""}
               onClick={() => edit(record)}
               type="primary"
             >
@@ -194,7 +221,7 @@ export const ManagementPledges = () => {
             </Button>
 
             <Popconfirm
-              title="Уверены что хотите удалить предмет залога?"
+              title="Уверены что хотите удалить кредит?"
               onConfirm={() => handleDelete(record.key)}
             >
               <Button>Удалить</Button>
@@ -215,7 +242,7 @@ export const ManagementPledges = () => {
     ? pledgesData.filter((pledge) => {
         const searchRegex = new RegExp(searchValue, "i");
         return (
-          searchRegex.test(pledge.pledge_code) ||
+          searchRegex.test(pledge.credit_code) ||
           searchRegex.test(pledge.condition) ||
           searchRegex.test(pledge.description) ||
           searchRegex.test(pledge.characteristics)
@@ -242,7 +269,7 @@ export const ManagementPledges = () => {
     <>
       <ManageButtonsWrapper>
         <Button loading={isDeleteLoading} onClick={handleAddNewLine}>
-          Добавить предмет залога
+          Добавить кредит
         </Button>
 
         <Input
@@ -262,7 +289,7 @@ export const ManagementPledges = () => {
           bordered
           dataSource={filteredData.map((pledge) => ({
             ...pledge,
-            key: pledge.pledge_code,
+            key: pledge.credit_code,
           }))}
           columns={mergedColumns}
           pagination={false}

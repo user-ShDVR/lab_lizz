@@ -8,10 +8,10 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ContractsService } from './contracts.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { ContractsService } from './dto/contracts.service';
 
 @Controller('contracts')
 @ApiTags('Contracts')
@@ -22,7 +22,7 @@ export class ContractsController {
   create(@Body() createContractDto: CreateContractDto) {
     return this.contractsService.create(createContractDto);
   }
-  @ApiTags('Лаба 6.2/Contracts')
+
   @Get()
   findAll(
     @Query('startDate') startDate: Date,

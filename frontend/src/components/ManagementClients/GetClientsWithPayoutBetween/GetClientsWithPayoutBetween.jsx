@@ -43,8 +43,16 @@ export const GetClientsWithPayoutBetween = ({ open, setOpen, refetch }) => {
       dataIndex: "client_code",
     },
     {
-      title: "ФИО",
-      dataIndex: "full_name",
+      title: "Фамилия",
+      dataIndex: "surname",
+    },
+    {
+      title: "Имя",
+      dataIndex: "name",
+    },
+    {
+      title: "Отчество",
+      dataIndex: "lastname",
     },
     {
       title: "Адрес",

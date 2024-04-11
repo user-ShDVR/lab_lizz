@@ -7,13 +7,13 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ClientsService } from './dto/clients.service';
+import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ClientsWithPayoutBetweenDto } from './dto/clientsWithPayoutBetween.dto';
-import { FindClientsByNamePatternDto } from './dto/findClientsByNamePattern.dto';
 import { ExistsAddressDto } from './dto/existDTO';
+import { FindClientsByNamePatternDto } from './dto/findClientsByNamePattern.dto';
 
 @Controller('clients')
 @ApiTags('Clients')
@@ -157,6 +157,12 @@ export class ClientsController {
   @Post()
   create(@Body() createClientDto: CreateClientDto) {
     return this.clientsService.create(createClientDto);
+  }
+
+  @ApiTags('Лаба 14')
+  @Get('findClientsCelebratingEveryFiveYearsAnniversaryNextMonth')
+  findClientsCelebratingEveryFiveYearsAnniversaryNextMonth() {
+    return this.clientsService.findClientsCelebratingEveryFiveYearsAnniversaryNextMonth();
   }
 
   @ApiTags('Лаба 6.1')

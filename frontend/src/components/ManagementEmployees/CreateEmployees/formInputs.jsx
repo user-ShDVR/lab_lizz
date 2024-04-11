@@ -4,12 +4,34 @@ import InputMask from "react-input-mask";
 
 export const formInputs = [
   {
-    label: "ФИО",
-    name: "full_name",
+    label: "Фамилия",
+    name: "surname",
     rules: [
       {
         required: true,
-        message: "Пожалуйста, введите фамилию, имя, отчество сотрудника!",
+        message: "Пожалуйста, введите фамилию клиента!",
+      },
+    ],
+    node: <Input />,
+  },
+  {
+    label: "Имя",
+    name: "name",
+    rules: [
+      {
+        required: true,
+        message: "Пожалуйста, введите имя клиента!",
+      },
+    ],
+    node: <Input />,
+  },
+  {
+    label: "Отчество",
+    name: "lastname",
+    rules: [
+      {
+        required: true,
+        message: "Пожалуйста, введите отчество клиента!",
       },
     ],
     node: <Input />,
@@ -30,40 +52,12 @@ export const formInputs = [
     ),
   },
   {
-    label: "День рождения",
-    name: "birth_date",
-    rules: [
-      {
-        required: true,
-        message: "Пожалуйста, введите день рождения сотрудника!",
-      },
-    ],
-    node: (
-      <DatePicker
-        format="YYYY-MM-DD"
-        locale={locale}
-        style={{ width: "100%" }}
-      />
-    ),
-  },
-  {
     label: "Должность",
     name: "position",
     rules: [
       {
         required: true,
         message: "Пожалуйста, введите должность сотрудника!",
-      },
-    ],
-    node: <Input />,
-  },
-  {
-    label: "Адрес",
-    name: "address",
-    rules: [
-      {
-        required: true,
-        message: "Пожалуйста, введите адрес сотрудника!",
       },
     ],
     node: <Input />,

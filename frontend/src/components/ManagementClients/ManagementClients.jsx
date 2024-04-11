@@ -28,6 +28,8 @@ import {
 } from "../../store/api/clientsApi";
 import { EditableCell } from "../EditableCell/EditableCell";
 import { GetClientsWithPayoutBetween } from "./GetClientsWithPayoutBetween/GetClientsWithPayoutBetween";
+import { formatDate } from "../ManagementEmployees/utils/formatDate";
+import { GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth } from "../ManagementEmployees/GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth/GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth";
 
 export const ManagementClients = () => {
   const [isOpenAddClientModal, setIsOpenAddClientModal] = React.useState(false);
@@ -52,7 +54,10 @@ export const ManagementClients = () => {
 
   const [deleteClient, { isLoading: isDeleteLoading }] =
     useDeleteClientMutation();
-
+  const [
+      isOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal,
+      setIsOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal,
+    ] = React.useState(false);
   const [findClients] = useFindClientsByNamePatternMutation();
 
   const { data: firstTenClientsData } = useGetFirstTenClientsQuery();
@@ -169,36 +174,85 @@ export const ManagementClients = () => {
     {
       title: "ID клиента",
       dataIndex: "client_code",
-      width: "7%",
+      width: "1%",
       sorter: {
         compare: (a, b) =>
           a.client_code.toString().localeCompare(b.client_code.toString()),
+        multiple: 9,
+      },
+      render: (_, record) => {
+        const contractsCount = record?.contract
+          ? record?.contract?.length
+          : record?._count?.contract;
+
+        return (
+          <>
+            <span>{record?.client_code}</span>
+            <br />
+            <span>
+              Количество договоров: <b>{contractsCount}</b>
+            </span>
+          </>
+        );
+      },
+    },
+    {
+      title: "Фамилия",
+      dataIndex: "surname",
+      width: "10%",
+      editable: true,
+      sorter: {
+        compare: (a, b) => a.surname - b.surname,
+        multiple: 8,
+      },
+    },
+    {
+      title: "Имя",
+      dataIndex: "name",
+      width: "10%",
+      editable: true,
+      sorter: {
+        compare: (a, b) => a.name.localeCompare(b.name),
+        multiple: 7,
+      },
+    },
+    {
+      title: "Отчество",
+      dataIndex: "lastname",
+      width: "10%",
+      editable: true,
+      sorter: {
+        compare: (a, b) => a.lastname - b.lastname,
+        multiple: 6,
+      },
+    },
+    {
+      title: "Дата рождения",
+      dataIndex: "birthday",
+      width: "10%",
+      editable: true,
+      render: (date) => formatDate(date),
+      sorter: (a, b) => a.birthday.localeCompare(b.birthday),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "Зарплата",
+      dataIndex: "salary",
+      width: "5%",
+      editable: true,
+      sorter: {
+        compare: (a, b) => a.salary - b.salary,
         multiple: 5,
       },
     },
     {
-      title: "ФИО",
-      dataIndex: "full_name",
+      title: "Место работы",
+      dataIndex: "workplace",
       width: "20%",
       editable: true,
       sorter: {
-        compare: (a, b) => a.full_name.localeCompare(b.full_name),
+        compare: (a, b) => a.workplace - b.workplace,
         multiple: 4,
-      },
-      render: (_, record) => {
-        const contractsCount = record?.contracts
-          ? record?.contracts?.length
-          : record?._count?.contracts;
-
-        return (
-          <>
-            <span>{record?.full_name}</span>
-            <br />
-            <span>
-              Количество договоров - <b>{contractsCount}</b>
-            </span>
-          </>
-        );
       },
     },
     {
@@ -207,7 +261,7 @@ export const ManagementClients = () => {
       width: "20%",
       editable: true,
       sorter: {
-        compare: (a, b) => a.address - b.address,
+        compare: (a, b) => a.address.toString().localeCompare(b.address.toString()),
         multiple: 3,
       },
     },
@@ -217,8 +271,7 @@ export const ManagementClients = () => {
       width: "15%",
       editable: true,
       sorter: {
-        compare: (a, b) =>
-          a.phone_number.toString().localeCompare(b.phone_number.toString()),
+        compare: (a, b) => a.phone_number.toString().localeCompare(b.phone_number.toString()),
         multiple: 2,
       },
       sortDirections: ["ascend", "descend"],
@@ -288,8 +341,8 @@ export const ManagementClients = () => {
   });
 
   const allClientsData = clientsData?.map((client) => ({
-    ...client.client,
-    key: client.client.client_code,
+    ...client,
+    key: client.client_code,
   }));
 
   const convertedClientsData = selectedClientsData?.map((client) => ({
@@ -330,15 +383,15 @@ export const ManagementClients = () => {
 
       <ManageButtonsWrapper>
         <Button onClick={() => setIsOpenAveragePayoutModal(true)}>
-          <b>(№5) </b>Средняя выплата клиенту
+          <b>(№5) </b>Средняя плата по кредиту
         </Button>
 
         <Button onClick={() => setIsOpenMaxPayoutModal(true)}>
-          <b>(№5) </b>Максимальная выплата клиенту
+          <b>(№5) </b>Максимальная плата по кредиту
         </Button>
 
         <Button onClick={() => setIsOpenMinPayoutModal(true)}>
-          <b>(№5) </b>Минимальная выплата клиенту
+          <b>(№5) </b>Минимальная плата по кредиту
         </Button>
       </ManageButtonsWrapper>
 
@@ -418,7 +471,7 @@ export const ManagementClients = () => {
 
       <ManageButtonsWrapper>
         <Button onClick={() => setIsOpenGetClientsWithPayoutBetweenModal(true)}>
-          <b>(№7) </b>Клиенты, которые получили выплаты
+          <b>(№7) </b>Клиенты, которые выплачивают кредит
         </Button>
       </ManageButtonsWrapper>
 
@@ -426,7 +479,7 @@ export const ManagementClients = () => {
         <Button
           onClick={() => handleFetchClientsData(countContractsPerClientData)}
         >
-          <b>(№9) </b>Клиенты с наибольшим количеством договоров
+          <b>(№9) </b>Клиенты с наибольшим количеством кредитов
         </Button>
       </ManageButtonsWrapper>
 
@@ -449,6 +502,21 @@ export const ManagementClients = () => {
         </Button>
       </ManageButtonsWrapper>
 
+      <ManageButtonsWrapper>
+        <Button
+          loading={isDeleteLoading}
+          onClick={() =>
+            setIsOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal(
+              true
+            )
+          }
+          type="primary"
+        >
+          <b>(№14) </b>Клиенты, которые в следующем месяце будут отмечать
+          юбилей
+        </Button>
+      </ManageButtonsWrapper>
+
       <Form form={form} component={false}>
         <StyledTableAnt
           components={{
@@ -460,26 +528,6 @@ export const ManagementClients = () => {
           dataSource={convertedClientsData || allClientsData}
           columns={mergedColumns}
           pagination={false}
-          expandable={{
-            expandedRowRender: (record) => {
-              const totalPayout = record.contracts?.reduce(
-                (acc, client) => acc + parseFloat(client.payout_to_client),
-                0
-              );
-
-              if (totalPayout > 0 && !fetchedRecords.includes(record.key)) {
-                refetch();
-                setFetchedRecords([...fetchedRecords, record.key]);
-              }
-
-              return (
-                <>
-                  Общие выплаты клиенту: <b>{totalPayout} ₽</b>
-                </>
-              );
-            },
-            rowExpandable: (record) => record.name !== "Not Expandable",
-          }}
         />
       </Form>
 
@@ -496,7 +544,7 @@ export const ManagementClients = () => {
       />
 
       <Modal
-        title="Средняя выплата клиенту"
+        title="Средняя плата по кредиту"
         open={isOpenAveragePayoutModal}
         onCancel={() => setIsOpenAveragePayoutModal(false)}
         footer={[
@@ -509,7 +557,7 @@ export const ManagementClients = () => {
       </Modal>
 
       <Modal
-        title="Максимальная выплата клиенту"
+        title="Максимальная плата по кредиту"
         open={isOpenMaxPayoutModal}
         onCancel={() => setIsOpenMaxPayoutModal(false)}
         footer={[
@@ -522,7 +570,7 @@ export const ManagementClients = () => {
       </Modal>
 
       <Modal
-        title="Минимальная выплата клиенту"
+        title="Минимальная плата по кредиту"
         open={isOpenMinPayoutModal}
         onCancel={() => setIsOpenMinPayoutModal(false)}
         footer={[
@@ -533,6 +581,14 @@ export const ManagementClients = () => {
       >
         <b>{minPayoutData?.[0].min}</b> ₽
       </Modal>
+      <GetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonth
+        open={
+          isOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal
+        }
+        setOpen={
+          setIsOpenGetEmployeesCelebratingEveryFiveYearsAnniversaryNextMonthModal
+        }
+      />
     </>
   );
 };

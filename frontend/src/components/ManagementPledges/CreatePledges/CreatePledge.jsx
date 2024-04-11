@@ -26,7 +26,7 @@ export const CreatePledge = ({ open, setOpen, refetch }) => {
 
   return (
     <Modal
-      title="Добавить предмет залога"
+      title="Добавить кредит"
       open={open}
       confirmLoading={isLoading}
       onCancel={() => setOpen(false)}

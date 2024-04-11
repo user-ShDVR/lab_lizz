@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Popconfirm, Button, Input, DatePicker, Typography } from "antd";
+import { Form, Popconfirm, Button, Input, DatePicker, Typography} from "antd";
 import {
   ActionsTableWrapper,
   ManageButtonsWrapper,
@@ -128,13 +128,13 @@ export const ManagementContracts = () => {
 
     if (contractsMoreData && payoutToClientMore !== 0) {
       filteredContractsData = contractsMoreData.filter(
-        (contract) => contract.payout_to_client > payoutToClientMore
+        (contract) => contract.monthly_payment > payoutToClientMore
       );
     }
 
     if (contractsLessData && payoutToClientLess !== 0) {
       filteredContractsData = contractsLessData.filter(
-        (contract) => contract.payout_to_client > payoutToClientLess
+        (contract) => contract.monthly_payment > payoutToClientLess
       );
     }
 
@@ -156,24 +156,24 @@ export const ManagementContracts = () => {
           searchRegex.test(formatDate(contract.termination_date)) ||
           searchRegex.test(formatDate(contract.payment_date)) ||
           searchRegex.test(contract.contract_type) ||
-          searchRegex.test(contract.payout_to_client) ||
+          searchRegex.test(contract.monthly_payment) ||
           (clientsData &&
             searchRegex.test(
               clientsData.find(
                 (client) => client.client_code === contract.client_code
-              )?.full_name
+              )?.name
             )) ||
           (pledgesData &&
             searchRegex.test(
               pledgesData.find(
-                (pledge) => pledge.pledge_code === contract.pledge_code
-              )?.description
+                (pledge) => pledge.credit_code === contract.credit_code
+              )?.credit_name
             )) ||
           (employeesData &&
             searchRegex.test(
               employeesData.find(
                 (employee) => employee.employee_code === contract.employee_code
-              )?.full_name
+              )?.name
             ))
         );
       })
@@ -207,37 +207,27 @@ export const ManagementContracts = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Дата расторжения",
-      dataIndex: "termination_date",
-      width: "10%",
-      editable: true,
-      render: (creationDate) => formatDate(creationDate),
-      sorter: (a, b) => a.termination_date.localeCompare(b.termination_date),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Дата платежа",
-      dataIndex: "payment_date",
+      title: "Сумма договора",
+      dataIndex: "contract_amount",
       width: "8%",
       editable: true,
-      render: (creationDate) => formatDate(creationDate),
-      sorter: (a, b) => a.payment_date.localeCompare(b.payment_date),
+      sorter: (a, b) => a.contract_amount.localeCompare(b.contract_amount),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Тип договора",
-      dataIndex: "contract_type",
+      title: "Срок договора",
+      dataIndex: "contract_term",
       width: "8%",
       editable: true,
-      sorter: (a, b) => a.contract_type.localeCompare(b.contract_type),
+      sorter: (a, b) => a.contract_term.localeCompare(b.contract_term),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Платеж клиенту",
-      dataIndex: "payout_to_client",
+      title: "Ежемесячный платеж",
+      dataIndex: "monthly_payment",
       width: "10%",
       editable: true,
-      sorter: (a, b) => a.payout_to_client.localeCompare(b.payout_to_client),
+      sorter: (a, b) => a.monthly_payment.localeCompare(b.monthly_payment),
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -247,9 +237,9 @@ export const ManagementContracts = () => {
       editable: true,
       render: (clientCode) => {
         const client = clientsData?.find(
-          (emp) => emp.client.client_code === clientCode
+          (emp) => emp.client_code === clientCode
         );
-        return client.client?.full_name || clientCode;
+        return `${client?.surname} ${client?.name} ${client?.lastname}` || clientCode;
       },
       sorter: (a, b) => {
         const aClient = clientsData?.find(
@@ -265,25 +255,25 @@ export const ManagementContracts = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Предмет залога",
-      dataIndex: "pledge_code",
+      title: "Тип кредита",
+      dataIndex: "credit_code",
       width: "11%",
       editable: true,
-      render: (pledgeCode) => {
+      render: (credit_code) => {
         const pledge = pledgesData?.find(
-          (emp) => emp.pledge_code === pledgeCode
+          (emp) => emp.credit_code === credit_code
         );
-        return pledge?.description || pledgeCode;
+        return pledge?.credit_name || credit_code;
       },
       sorter: (a, b) => {
         const aPledge = pledgesData?.find(
-          (emp) => emp.pledge_code === a.pledge_code
+          (emp) => emp.credit_code === a.credit_code
         );
         const bPledge = pledgesData?.find(
-          (emp) => emp.pledge_code === b.pledge_code
+          (emp) => emp.credit_code === b.credit_code
         );
-        return (aPledge?.description || a.pledge_code).localeCompare(
-          bPledge?.description || b.pledge_code
+        return (aPledge?.description || a.credit_code).localeCompare(
+          bPledge?.description || b.credit_code
         );
       },
       sortDirections: ["ascend", "descend"],
@@ -297,7 +287,7 @@ export const ManagementContracts = () => {
         const employee = employeesData?.find(
           (emp) => emp.employee_code === employeeCode
         );
-        return employee?.full_name || employeeCode;
+        return `${employee?.surname} ${employee?.name} ${employee?.lastname}`|| employeeCode;
       },
       sorter: (a, b) => {
         const aEmployee = employeesData?.find(
@@ -352,14 +342,14 @@ export const ManagementContracts = () => {
               <Button>Удалить</Button>
             </Popconfirm>
 
-            {/* <Button type="primary">
-              <Link
+            <Button type="primary">
+              <a
                 target="_blank"
-                to={`http://localhost:3000/uploads/${record.contract_code}.pdf`}
+                href={`http://localhost:3000/uploads/${record.contract_code}.pdf`}
               >
                 Экспортировать
-              </Link>
-            </Button> */}
+              </a>
+            </Button>
           </ActionsTableWrapper>
         );
       },

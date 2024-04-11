@@ -4,17 +4,18 @@ import { CreateForm } from "../../../styles/createFormsStyles";
 import { FormInputs } from "./formInputs";
 import { useCreateContractMutation } from "../../../store/api/contractsApi";
 
-export const CreateContracts = ({ open, setOpen, refetch }) => {
+export const CreateContracts = ({ open, setOpen, refetchContractsBetweenData }) => {
   const [createContract, { isLoading }] = useCreateContractMutation();
   const [form] = CreateForm.useForm();
 
   const onCreateContractOk = async () => {
     try {
-      const employeeValues = await form.validateFields();
-      await createContract(employeeValues);
+      const contractValues = await form.validateFields();
+      
+      await createContract({...contractValues, contract_amount: +contractValues.contract_amount, contract_term:  +contractValues.contract_term});
 
       setOpen(false);
-      refetch();
+      refetchContractsBetweenData();
     } catch (error) {
       console.error("Validation failed:", error);
     }
