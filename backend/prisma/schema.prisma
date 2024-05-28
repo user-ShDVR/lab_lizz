@@ -51,7 +51,9 @@ model Product {
   quantity        Int
 
   checks    Check[]
-  warehouse Warehouse[]
+  warehouseProducts WarehouseProduct[]
+  deleted Boolean                  @default(false)
+
 }
 
 model Characteristic {
@@ -85,6 +87,8 @@ model Check {
   dilerId Int?
   diler   User? @relation("Diler", fields: [dilerId], references: [id])
 
+  summary Int
+
   type CheckType
 }
 
@@ -92,8 +96,18 @@ model Warehouse {
   id            Int     @id @default(autoincrement())
   name          String
   address       String
-  productId     Int
-  product       Product @relation(fields: [productId], references: [id])
   distributorId Int
   distributor   User    @relation(fields: [distributorId], references: [id])
+  warehouseProducts WarehouseProduct[]
+}
+
+model WarehouseProduct {
+  id            Int     @id @default(autoincrement())
+  quantity      Int
+  productId     Int
+  warehouseId   Int
+  price         Int
+
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
 }

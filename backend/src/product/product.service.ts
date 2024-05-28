@@ -42,7 +42,11 @@ export class ProductService {
   }
 
   async findAll() {
-    return await this.db.product.findMany();
+    return await this.db.product.findMany({where: { deleted: false}});
+  }
+
+  async findAllByOwnerId(ownerId: number) {
+    return await this.db.product.findMany({where: { ownerId, deleted: false}});
   }
 
   async findOne(id: number) {
@@ -87,6 +91,6 @@ export class ProductService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return await this.db.product.delete({ where: { id } });
+    return await this.db.product.update({ where: { id }, data: { deleted: true} });
   }
 }
