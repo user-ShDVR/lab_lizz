@@ -137,7 +137,7 @@ export const ManagementDistributor = () => {
     {
       title: "Расчетный счет",
       dataIndex: "paymentAccount",
-      width: "5%",
+      width: "35%",
       editable: true,
       sorter: {
         compare: (a, b) => a.paymentAccount - b.paymentAccount,

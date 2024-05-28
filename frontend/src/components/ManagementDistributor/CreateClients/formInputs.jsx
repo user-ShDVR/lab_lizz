@@ -12,7 +12,7 @@ export const formInputs = [
       },
     ],
     node: <Input />,
-  },
+  },  
   {
     label: "Расчетный счет",
     name: "paymentAccount",
@@ -22,7 +22,11 @@ export const formInputs = [
         message: "Пожалуйста, введите расчетный счет!",
       },
     ],
-    node: <Input />,
+    node: (
+      <InputMask mask="999999999999999999999999999" maskChar="_">
+        {(inputProps) => <Input {...inputProps} />}
+      </InputMask>
+    ),
   },
   {
     label: "БИК",
@@ -33,7 +37,11 @@ export const formInputs = [
         message: "Пожалуйста, введите БИК!",
       },
     ],
-    node: <Input/>,
+    node: (
+      <InputMask mask="999999999" maskChar="_">
+        {(inputProps) => <Input {...inputProps} />}
+      </InputMask>
+    ),
   },
   {
     label: "КПП",
@@ -44,7 +52,11 @@ export const formInputs = [
         message: "Пожалуйста, введите КПП!",
       },
     ],
-    node: <Input />,
+    node: (
+      <InputMask mask="999999999" maskChar="_">
+        {(inputProps) => <Input {...inputProps} />}
+      </InputMask>
+    ),
   },
   {
     label: "ИНН",
@@ -55,7 +67,11 @@ export const formInputs = [
         message: "Пожалуйста, введите ИНН!",
       },
     ],
-    node: <Input />,
+    node: (
+      <InputMask mask="9999999999" maskChar="_">
+        {(inputProps) => <Input {...inputProps} />}
+      </InputMask>
+    ),
   },
   {
     label: "Адрес",

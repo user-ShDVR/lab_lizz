@@ -5,29 +5,32 @@ import {
   ManageButtonsWrapper,
   StyledTableAnt,
 } from "../../styles/managementTableStyles";
-import { CreateProducts } from "./CreateProducts/CreateProducts";
+import { CreateDistChecks } from "./CreateDilChecks/CreateDistChecks";
 import { useGetAllClientsQuery } from "../../store/api/clientsApi";
 import {
-  useUpdateProductMutation,
-  useDeleteProductMutation,
-  useGetAllProductsQuery,
-} from "../../store/api/productsApi";
+} from "../../store/api/checksApi";
 import { EditableCell } from "../EditableCell/EditableCell";
+import { useDeleteCheckMutation, useGetAllChecksQuery, useUpdateCheckMutation } from "../../store/api/checksApi";
+import { useGetAllProductsQuery } from "../../store/api/productsApi";
 
-export const ManagementProducts = () => {
+export const ManagementDilChecks = () => {
   const [open, setOpen] = React.useState(false);
   const [form] = Form.useForm();
 
-  const { data: productsData, refetch: refetchProducts } =
-    useGetAllProductsQuery();
+  const { data: checksData, refetch: refetchChecks } =
+    useGetAllChecksQuery({
+      type: "SALE",
+    });
+
+  const { data: productsData } = useGetAllProductsQuery();
 
   const { data: clientsData } = useGetAllClientsQuery();
 
-  const [updateProduct, { isLoading: isUpdateLoading }] =
-    useUpdateProductMutation();
+  const [updateCheck, { isLoading: isUpdateLoading }] =
+    useUpdateCheckMutation();
 
-  const [deleteProduct, { isLoading: isDeleteLoading }] =
-    useDeleteProductMutation();
+  const [deleteCheck, { isLoading: isDeleteLoading }] =
+    useDeleteCheckMutation();
 
   const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
@@ -44,20 +47,20 @@ export const ManagementProducts = () => {
   const save = async (key) => {
     try {
       const row = await form.validateFields();
-      const newData = [...productsData];
+      const newData = [...checksData];
       const index = newData.findIndex((item) => key === item.id);
 
       if (index > -1) {
         const item = newData[index];
-        await updateProduct({ id: item.id, data: row });
+        await updateCheck({ id: item.id, data: row });
 
         setEditingKey("");
-        refetchProducts();
+        refetchChecks();
       } else {
         newData.push(row);
         const item = newData[index];
 
-        await updateProduct({ id: item.id, data: row });
+        await updateCheck({ id: item.id, data: row });
         setEditingKey("");
       }
     } catch (errInfo) {
@@ -66,20 +69,25 @@ export const ManagementProducts = () => {
   };
 
   const handleDelete = async (key) => {
-    const dataSource = [...productsData];
+    const dataSource = [...checksData];
     const productToDelete = dataSource.find((item) => item.id === key);
 
     try {
-      await deleteProduct(productToDelete.id.toString());
-      await refetchProducts();
+      await deleteCheck(productToDelete.id.toString());
+      await refetchChecks();
     } catch (error) {
       console.error("Error deleting product:", error);
     }
   };
 
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "numeric", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
   const columns = [
     {
-      title: "ID продукта",
+      title: "ID",
       dataIndex: "id",
       width: "8%",
       sorter: (a, b) => {
@@ -89,35 +97,51 @@ export const ManagementProducts = () => {
       },
       sortDirections: ["ascend", "descend"],
     },
-
     {
       title: "Название продукта",
-      dataIndex: "name",
-      width: "10%",
+      dataIndex: "productId",
+      width: "20%",
       editable: true,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Цена",
-      dataIndex: "price",
-      width: "8%",
-      editable: true,
-      render: (text) => `${text} ₽`,
-      sorter: (a, b) => a.price.localeCompare(b.price),
+      render: (productId) => {
+        const product = productsData?.find((emp) => emp.id === productId);
+        return `${product?.name}` || productId;
+      },
+      sorter: (a, b) => {
+        const aClient = productsData?.find((emp) => emp.id === a.id);
+        const bClient = productsData?.find((emp) => emp.id === b.id);
+        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
+      },
       sortDirections: ["ascend", "descend"],
     },
     {
       title: "Количество",
-      dataIndex: "quantity",
+      dataIndex: "productQuantity",
       width: "8%",
       editable: true,
-      sorter: (a, b) => a.quantity.localeCompare(b.quantity),
+      sorter: (a, b) => a.productQuantity.localeCompare(b.productQuantity),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Производитель",
-      dataIndex: "makerId",
+      title: "Сумма",
+      dataIndex: "summary",
+      width: "8%",
+      editable: true,
+      render: (summary) => `${summary} ₽`,
+      sorter: (a, b) => a.summary.localeCompare(b.summary),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "Дата заключения договора",
+      dataIndex: "date",
+      width: "8%",
+      editable: true,
+      render: (date) => formatDate(date),
+      sorter: (a, b) => a.productQuantity.localeCompare(b.productQuantity),
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "Дистрибьютор",
+      dataIndex: "distributorId",
       width: "20%",
       editable: true,
       render: (clientCode) => {
@@ -132,8 +156,8 @@ export const ManagementProducts = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Держатель товара",
-      dataIndex: "ownerId",
+      title: "Дилер",
+      dataIndex: "dilerId",
       width: "20%",
       editable: true,
       render: (clientCode) => {
@@ -181,7 +205,7 @@ export const ManagementProducts = () => {
             </Button> */}
 
             <Popconfirm
-              title="Уверены что хотите удалить продукт?"
+              title="Уверены что хотите удалить чек?"
               onConfirm={() => handleDelete(record.key)}
             >
               <Button>Удалить</Button>
@@ -207,16 +231,16 @@ export const ManagementProducts = () => {
     };
   });
 
-  const allProductsData = productsData?.map((product) => ({
-    ...product,
-    key: product.id,
+  const allChecksData = checksData?.map((check) => ({
+    ...check,
+    key: check.id,
   }));
 
   return (
     <>
       <ManageButtonsWrapper>
         <Button loading={isDeleteLoading} onClick={() => setOpen(true)}>
-          Добавить продукт
+          Добавить чек
         </Button>
       </ManageButtonsWrapper>
 
@@ -242,16 +266,16 @@ export const ManagementProducts = () => {
               Array.isArray(record.characteristics) &&
               record.characteristics.length > 0,
           }}
-          dataSource={allProductsData}
+          dataSource={allChecksData}
           columns={mergedColumns}
           pagination={false}
         />
       </Form>
 
-      <CreateProducts
+      <CreateDistChecks
         open={open}
         setOpen={setOpen}
-        refetchProducts={refetchProducts}
+        refetchChecks={refetchChecks}
       />
     </>
   );

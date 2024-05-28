@@ -42,11 +42,62 @@ export class ProductService {
   }
 
   async findAll() {
-    return await this.db.product.findMany({where: { deleted: false}});
+    return await this.db.product.findMany({
+      where: { deleted: false },
+      include: { characteristics: true },
+    });
   }
 
   async findAllByOwnerId(ownerId: number) {
-    return await this.db.product.findMany({where: { ownerId, deleted: false}});
+    return await this.db.product.findMany({
+      where: { ownerId, deleted: false },
+    });
+  }
+
+  async findAllByMaker() {
+    // Получить все makerId
+    const makers = await this.db.user.findMany({
+      where: {
+        role: 'MAKER',
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const makerIds = makers.map((maker) => maker.id);
+
+    return await this.db.product.findMany({
+      where: {
+        ownerId: {
+          in: makerIds,
+        },
+        deleted: false,
+      },
+    });
+  }
+
+  async findAllByDistributor() {
+    // Получить все makerId
+    const distributors = await this.db.user.findMany({
+      where: {
+        role: 'DISTRIBUTOR',
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const distributorIds = distributors.map((distributor) => distributor.id);
+
+    return await this.db.product.findMany({
+      where: {
+        ownerId: {
+          in: distributorIds,
+        },
+        deleted: false,
+      },
+    });
   }
 
   async findOne(id: number) {
@@ -91,6 +142,9 @@ export class ProductService {
 
   async remove(id: number) {
     await this.findOne(id);
-    return await this.db.product.update({ where: { id }, data: { deleted: true} });
+    return await this.db.product.update({
+      where: { id },
+      data: { deleted: true },
+    });
   }
 }

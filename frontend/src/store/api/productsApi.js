@@ -24,6 +24,14 @@ export const productsApi = createApi({
       query: () => "product",
     }),
 
+    getAllProductsByMaker: builder.query({
+      query: () => "product/maker",
+    }),
+
+    getAllProductsByDistributor: builder.query({
+      query: () => "product/distributor",
+    }),
+
     getAllProductsFromUser: builder.query({
       query: ({ id }) => ({
         url: `product`,
@@ -55,4 +63,6 @@ export const {
   useDeleteProductMutation,
   useGetAllProductsQuery,
   useGetAllProductsFromUserQuery,
+  useGetAllProductsByMakerQuery,
+  useGetAllProductsByDistributorQuery,
 } = productsApi;

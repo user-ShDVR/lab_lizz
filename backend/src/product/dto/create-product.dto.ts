@@ -40,7 +40,6 @@ export class CreateProductDto {
   @IsArray()
   @IsNotEmpty()
   characteristics: CharacteristicDto[];
-
 }
 
 class CharacteristicDto {

@@ -58,7 +58,11 @@ export class GeneratePdfService {
       .text('Информация о продукте:', { align: 'center', lineGap: 20 });
     doc.fontSize(12).text(`Наименование продукта: ${check.product.name}`);
     doc.fontSize(12).text(`Количество: ${check.product.quantity}`);
-    doc.fontSize(12).text(`Общая стоимость: ${check.product.quantity * check.product.price} руб.`);
+    doc
+      .fontSize(12)
+      .text(
+        `Общая стоимость: ${check.product.quantity * check.product.price} руб.`,
+      );
 
     doc
       .fontSize(14)

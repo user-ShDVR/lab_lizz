@@ -5,37 +5,39 @@ import {
   ManageButtonsWrapper,
   StyledTableAnt,
 } from "../../styles/managementTableStyles";
-import { CreateProducts } from "./CreateProducts/CreateProducts";
+import { CreateWarehouse } from "./CreateWarehouse/CreateWarehouse";
 import { useGetAllClientsQuery } from "../../store/api/clientsApi";
 import {
-  useUpdateProductMutation,
-  useDeleteProductMutation,
-  useGetAllProductsQuery,
-} from "../../store/api/productsApi";
+  useUpdateWarehouseMutation,
+  useDeleteWarehouseMutation,
+  useGetAllWarehouseQuery,
+} from "../../store/api/warehouseApi";
 import { EditableCell } from "../EditableCell/EditableCell";
 
-export const ManagementProducts = () => {
+import { ProductWTable } from "../ProductWTable/ProductWTable";
+
+export const ManagementWarehouse = () => {
   const [open, setOpen] = React.useState(false);
   const [form] = Form.useForm();
 
-  const { data: productsData, refetch: refetchProducts } =
-    useGetAllProductsQuery();
+  const { data: warehousesData, refetch: refetchWarehouse } =
+    useGetAllWarehouseQuery();
 
   const { data: clientsData } = useGetAllClientsQuery();
 
-  const [updateProduct, { isLoading: isUpdateLoading }] =
-    useUpdateProductMutation();
+  const [updateWarehouse, { isLoading: isUpdateLoading }] =
+  useUpdateWarehouseMutation();
 
-  const [deleteProduct, { isLoading: isDeleteLoading }] =
-    useDeleteProductMutation();
+  const [deleteWarehouse, { isLoading: isDeleteLoading }] =
+    useDeleteWarehouseMutation();
 
   const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
 
-  // const edit = (record) => {
-  //   form.setFieldsValue({ ...record });
-  //   setEditingKey(record.key);
-  // };
+  const edit = (record) => {
+    form.setFieldsValue({ ...record });
+    setEditingKey(record.key);
+  };
 
   const cancel = () => {
     setEditingKey("");
@@ -44,20 +46,20 @@ export const ManagementProducts = () => {
   const save = async (key) => {
     try {
       const row = await form.validateFields();
-      const newData = [...productsData];
+      const newData = [...warehousesData];
       const index = newData.findIndex((item) => key === item.id);
 
       if (index > -1) {
         const item = newData[index];
-        await updateProduct({ id: item.id, data: row });
+        await updateWarehouse({ id: item.id, data: row });
 
         setEditingKey("");
-        refetchProducts();
+        refetchWarehouse();
       } else {
         newData.push(row);
         const item = newData[index];
 
-        await updateProduct({ id: item.id, data: row });
+        await updateWarehouse({ id: item.id, data: row });
         setEditingKey("");
       }
     } catch (errInfo) {
@@ -66,12 +68,12 @@ export const ManagementProducts = () => {
   };
 
   const handleDelete = async (key) => {
-    const dataSource = [...productsData];
+    const dataSource = [...warehousesData];
     const productToDelete = dataSource.find((item) => item.id === key);
 
     try {
-      await deleteProduct(productToDelete.id.toString());
-      await refetchProducts();
+      await deleteWarehouse(productToDelete.id.toString());
+      await refetchWarehouse();
     } catch (error) {
       console.error("Error deleting product:", error);
     }
@@ -79,7 +81,7 @@ export const ManagementProducts = () => {
 
   const columns = [
     {
-      title: "ID продукта",
+      title: "ID",
       dataIndex: "id",
       width: "8%",
       sorter: (a, b) => {
@@ -91,7 +93,7 @@ export const ManagementProducts = () => {
     },
 
     {
-      title: "Название продукта",
+      title: "Название склада",
       dataIndex: "name",
       width: "10%",
       editable: true,
@@ -99,41 +101,16 @@ export const ManagementProducts = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Цена",
-      dataIndex: "price",
-      width: "8%",
+      title: "Адрес",
+      dataIndex: "address",
+      width: "10%",
       editable: true,
-      render: (text) => `${text} ₽`,
-      sorter: (a, b) => a.price.localeCompare(b.price),
+      sorter: (a, b) => a.address.localeCompare(b.address),
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Количество",
-      dataIndex: "quantity",
-      width: "8%",
-      editable: true,
-      sorter: (a, b) => a.quantity.localeCompare(b.quantity),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Производитель",
-      dataIndex: "makerId",
-      width: "20%",
-      editable: true,
-      render: (clientCode) => {
-        const client = clientsData?.find((emp) => emp.id === clientCode);
-        return `${client?.companyName}` || clientCode;
-      },
-      sorter: (a, b) => {
-        const aClient = clientsData?.find((emp) => emp.id === a.id);
-        const bClient = clientsData?.find((emp) => emp.id === b.id);
-        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
-      },
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Держатель товара",
-      dataIndex: "ownerId",
+      title: "Владелец склада",
+      dataIndex: "distributorId",
       width: "20%",
       editable: true,
       render: (clientCode) => {
@@ -172,16 +149,16 @@ export const ManagementProducts = () => {
           </ActionsTableWrapper>
         ) : (
           <ActionsTableWrapper>
-            {/* <Button
+            <Button
               disabled={editingKey !== ""}
               onClick={() => edit(record)}
               type="primary"
             >
               Изменить
-            </Button> */}
+            </Button>
 
             <Popconfirm
-              title="Уверены что хотите удалить продукт?"
+              title="Уверены что хотите удалить склад?"
               onConfirm={() => handleDelete(record.key)}
             >
               <Button>Удалить</Button>
@@ -207,16 +184,16 @@ export const ManagementProducts = () => {
     };
   });
 
-  const allProductsData = productsData?.map((product) => ({
-    ...product,
-    key: product.id,
+  const allWarehousesData = warehousesData?.map((warehouse) => ({
+    ...warehouse,
+    key: warehouse.id,
   }));
 
   return (
     <>
       <ManageButtonsWrapper>
         <Button loading={isDeleteLoading} onClick={() => setOpen(true)}>
-          Добавить продукт
+          Добавить склад
         </Button>
       </ManageButtonsWrapper>
 
@@ -229,29 +206,19 @@ export const ManagementProducts = () => {
           }}
           bordered
           expandable={{
-            expandedRowRender: (record) => (
-              <ul>
-                {record.characteristics.map((char) => (
-                  <li key={char.id}>
-                    {char.name}: {char.value}
-                  </li>
-                ))}
-              </ul>
-            ),
-            rowExpandable: (record) =>
-              Array.isArray(record.characteristics) &&
-              record.characteristics.length > 0,
+            expandedRowRender: (record) => <ProductWTable products={record.warehouseProducts} />,
+            rowExpandable: (record) => Array.isArray(record.warehouseProducts) && record.warehouseProducts.length > 0,
           }}
-          dataSource={allProductsData}
+          dataSource={allWarehousesData}
           columns={mergedColumns}
           pagination={false}
         />
       </Form>
 
-      <CreateProducts
+      <CreateWarehouse
         open={open}
         setOpen={setOpen}
-        refetchProducts={refetchProducts}
+        refetchWarehouse={refetchWarehouse}
       />
     </>
   );

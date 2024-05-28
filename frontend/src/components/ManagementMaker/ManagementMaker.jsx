@@ -149,7 +149,7 @@ export const ManagementMaker = () => {
     {
       title: "Расчетный счет",
       dataIndex: "paymentAccount",
-      width: "5%",
+      width: "35%",
       editable: true,
       sorter: {
         compare: (a, b) => a.paymentAccount - b.paymentAccount,
@@ -159,7 +159,7 @@ export const ManagementMaker = () => {
     {
       title: "БИК",
       dataIndex: "BIK",
-      width: "5%",
+      width: "15%",
       editable: true,
       sorter: {
         compare: (a, b) => a.BIK - b.BIK,
@@ -169,7 +169,7 @@ export const ManagementMaker = () => {
     {
       title: "ИНН",
       dataIndex: "INN",
-      width: "5%",
+      width: "15%",
       editable: true,
       sorter: {
         compare: (a, b) => a.INN - b.INN,

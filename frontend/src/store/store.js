@@ -4,6 +4,8 @@ import { clientsApi } from "./api/clientsApi";
 import { employeesApi } from "./api/employeesApi";
 import { contractsApi } from "./api/contractsApi";
 import { productsApi } from "./api/productsApi";
+import { warehouseApi } from "./api/warehouseApi";
+import { checksApi } from "./api/checksApi";
 
 export const rtkQueryErrorLogger =
   () => (next) => (action) => {
@@ -26,6 +28,8 @@ export const store = configureStore({
     [employeesApi.reducerPath]: employeesApi.reducer,
     [productsApi.reducerPath]: productsApi.reducer,
     [contractsApi.reducerPath]: contractsApi.reducer,
+    [warehouseApi.reducerPath]: warehouseApi.reducer,
+    [checksApi.reducerPath]: checksApi.reducer,
   },
   devTools: true,
   middleware: (getDefaultMiddleware) =>
@@ -35,5 +39,7 @@ export const store = configureStore({
       employeesApi.middleware,
       productsApi.middleware,
       contractsApi.middleware,
+      warehouseApi.middleware,
+      checksApi.middleware,
     ]),
 });

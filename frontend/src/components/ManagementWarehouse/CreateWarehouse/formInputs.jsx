@@ -2,16 +2,15 @@ import React from 'react';
 import { Input, Select } from 'antd';
 import { CreateForm } from "../../../styles/createFormsStyles";
 import { useGetAllClientsByRoleQuery } from "../../../store/api/clientsApi";
-import CharacteristicsInput from './CharacteristicsInput';
 
 export const FormInputs = () => {
   const { data: clientsData } = useGetAllClientsByRoleQuery({
-    role: "MAKER",
+    role: "DISTRIBUTOR",
   });
 
   const formInputs = [
     {
-      label: "Наименование товара",
+      label: "Наименование склада",
       name: "name",
       rules: [
         {
@@ -22,34 +21,23 @@ export const FormInputs = () => {
       node: <Input />,
     },
     {
-      label: "Цена товара",
-      name: "price",
+      label: "Адрес склада",
+      name: "address",
       rules: [
         {
           required: true,
-          message: "Пожалуйста, введите цену!",
+          message: "Пожалуйста, введите адрес!",
         },
       ],
-      node: <Input type="number" />,
+      node: <Input />,
     },
     {
-      label: "Количество",
-      name: "quantity",
+      label: "Владелец склада",
+      name: "distributorId",
       rules: [
         {
           required: true,
-          message: "Пожалуйста, введите цену!",
-        },
-      ],
-      node: <Input type="number" />,
-    },
-    {
-      label: "Производитель",
-      name: "makerId",
-      rules: [
-        {
-          required: true,
-          message: "Пожалуйста, введите производителя!",
+          message: "Пожалуйста, введите владельца!",
         },
       ],
       options: clientsData?.map((client) => ({
@@ -65,11 +53,6 @@ export const FormInputs = () => {
           ))}
         </Select>
       ),
-    },
-    {
-      label: "Характеристики",
-      name: "characteristics",
-      node: <CharacteristicsInput />,
     },
   ];
 

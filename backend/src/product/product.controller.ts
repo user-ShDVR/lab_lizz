@@ -31,6 +31,16 @@ export class ProductController {
     return this.productService.findAllByOwnerId(+id);
   }
 
+  @Get('maker')
+  findAllByMaker() {
+    return this.productService.findAllByMaker();
+  }
+
+  @Get('distributor')
+  findAllByDistributor() {
+    return this.productService.findAllByDistributor();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);

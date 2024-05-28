@@ -25,7 +25,23 @@ export class WarehouseService {
   }
 
   async findAll() {
-    return await this.db.warehouse.findMany();
+    const warehouses = await this.db.warehouse.findMany({
+      include: {
+        warehouseProducts: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    // Фильтрация продуктов, у которых deleted: false
+    return warehouses.map((warehouse) => ({
+      ...warehouse,
+      warehouseProducts: warehouse.warehouseProducts.filter(
+        (wp) => !wp.product.deleted,
+      ),
+    }));
   }
 
   async findOne(id: number) {

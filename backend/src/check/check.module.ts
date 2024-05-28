@@ -8,6 +8,12 @@ import { GeneratePdfService } from 'src/utils/generate-pdf.service';
 
 @Module({
   controllers: [CheckController],
-  providers: [CheckService, PrismaService, ProductService, UserService, GeneratePdfService],
+  providers: [
+    CheckService,
+    PrismaService,
+    ProductService,
+    UserService,
+    GeneratePdfService,
+  ],
 })
 export class CheckModule {}

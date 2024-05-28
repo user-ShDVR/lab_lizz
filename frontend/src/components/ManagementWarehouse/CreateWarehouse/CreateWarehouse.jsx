@@ -2,20 +2,20 @@ import React from "react";
 import { Button, Modal } from "antd";
 import { CreateForm } from "../../../styles/createFormsStyles";
 import { FormInputs } from "./formInputs";
-import { useCreateProductMutation } from "../../../store/api/productsApi";
+import { useCreateWarehouseMutation } from "../../../store/api/warehouseApi";
 
-export const CreateProducts = ({ open, setOpen, refetchProducts }) => {
-  const [createProduct, { isLoading }] = useCreateProductMutation();
+export const CreateWarehouse = ({ open, setOpen, refetchWarehouse }) => {
+  const [CreateWarehouse, { isLoading }] = useCreateWarehouseMutation();
   const [form] = CreateForm.useForm();
 
-  const onCreateProductOk = async () => {
+  const onCreateWarehouseOk = async () => {
     try {
-      const productValues = await form.validateFields();
+      const warehouseValues = await form.validateFields();
       
-      await createProduct({...productValues, price: +productValues.price, quantity: +productValues.quantity});
+      await CreateWarehouse({...warehouseValues});
 
       setOpen(false);
-      refetchProducts();
+      refetchWarehouse();
     } catch (error) {
       console.error("Validation failed:", error);
     }
@@ -27,14 +27,14 @@ export const CreateProducts = ({ open, setOpen, refetchProducts }) => {
 
   return (
     <Modal
-      title="Добавить продукцию"
+      title="Добавить склад"
       open={open}
       confirmLoading={isLoading}
       onCancel={() => setOpen(false)}
       footer={[
         <Button onClick={() => setOpen(false)}>Отмена</Button>,
 
-        <Button type="primary" loading={isLoading} onClick={onCreateProductOk}>
+        <Button type="primary" loading={isLoading} onClick={onCreateWarehouseOk}>
           Создать
         </Button>,
       ]}

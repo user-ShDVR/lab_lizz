@@ -9,18 +9,24 @@ export const ProductTable = ({ products }) => {
       key: 'id',
     },
     {
-      title: 'Product Name',
+      title: 'Название',
       dataIndex: 'name',
       key: 'name',
     },
     {
-      title: 'Price',
+      title: 'Цена',
       dataIndex: 'price',
       key: 'price',
-      render: (text) => `$${text}`,
+      render: (text) => `${text} ₽`,
     },
     {
-      title: 'Characteristics',
+      title: 'Количество',
+      dataIndex: 'quantity',
+      key: 'price',
+      render: (quantity) => `${quantity}`,
+    },
+    {
+      title: 'Характеристики',
       dataIndex: 'characteristics',
       key: 'characteristics',
       render: (characteristics) => (

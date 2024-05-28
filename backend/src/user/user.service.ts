@@ -76,10 +76,12 @@ export class UserService {
         country: true,
         contactNumber: true,
         products: {
+          where: { deleted: false },
           select: {
             id: true,
             name: true,
             price: true,
+            quantity: true,
             characteristics: true,
           },
         },
@@ -88,6 +90,7 @@ export class UserService {
             id: true,
             name: true,
             price: true,
+            quantity: true,
             characteristics: true,
           },
         },

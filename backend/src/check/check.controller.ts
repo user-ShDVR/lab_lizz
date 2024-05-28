@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { CheckService } from './check.service';
 import { CreateCheckDto } from './dto/create-check.dto';
 import { UpdateCheckDto } from './dto/update-check.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { CheckType } from '@prisma/client';
 @ApiTags('check')
 @Controller('check')
 export class CheckController {
@@ -14,8 +24,8 @@ export class CheckController {
   }
 
   @Get()
-  findAll() {
-    return this.checkService.findAll();
+  findAll(@Query('type') type: CheckType) {
+    return this.checkService.findAll(type);
   }
 
   @Get(':id')

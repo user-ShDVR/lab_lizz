@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Length,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -12,7 +11,7 @@ export class CreateUserDto {
   @ApiProperty({ example: 'NAME-OF-COMPANY' })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(15)
+  @MaxLength(100)
   companyName: string;
 
   @ApiProperty({ example: 'Мира 31' })
@@ -31,7 +30,7 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  @MaxLength(20)
+  @MaxLength(30)
   country?: string;
 
   @ApiProperty({ example: '654646373747867675656362386' })
@@ -44,19 +43,21 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(9)
-  @MaxLength(10)
+  @MaxLength(15)
   BIK: string;
 
   @ApiProperty({ example: '654646373' })
   @IsString()
   @IsNotEmpty()
-  @Length(9)
+  @MinLength(9)
+  @MaxLength(15)
   KPP: string;
 
   @ApiProperty({ example: '6546463775' })
   @IsString()
   @IsNotEmpty()
-  @Length(10)
+  @MinLength(9)
+  @MaxLength(15)
   INN: string;
 
   @ApiProperty({ example: 'DILER' })
