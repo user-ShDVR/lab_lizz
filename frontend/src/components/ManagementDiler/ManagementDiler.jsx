@@ -12,6 +12,7 @@ import {
   useUpdateClientMutation,
 } from "../../store/api/clientsApi";
 import { EditableCell } from "../EditableCell/EditableCell";
+import { ProductTable } from "../ProductTable/ProductTable";
 
 export const ManagementDiler = () => {
   const [isOpenAddClientModal, setIsOpenAddClientModal] = React.useState(false);
@@ -131,16 +132,6 @@ export const ManagementDiler = () => {
       sorter: {
         compare: (a, b) => a.contactNumber - b.contactNumber,
         multiple: 6,
-      },
-    },
-    {
-      title: "Страна производителя",
-      dataIndex: "country",
-      width: "5%",
-      editable: true,
-      sorter: {
-        compare: (a, b) => a.country - b.country,
-        multiple: 5,
       },
     },
     {
@@ -265,6 +256,10 @@ export const ManagementDiler = () => {
             body: {
               cell: EditableCell,
             },
+          }}
+          expandable={{
+            expandedRowRender: (record) => <ProductTable products={record.products} />,
+            rowExpandable: (record) => Array.isArray(record.products) && record.products.length > 0,
           }}
           bordered
           dataSource={convertedClientsData || allClientsData}

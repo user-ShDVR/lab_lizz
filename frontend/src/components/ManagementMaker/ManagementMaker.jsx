@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Popconfirm, Button } from "antd";
+import { Form, Popconfirm, Button, Table } from "antd";
 import {
   ActionsTableWrapper,
   ManageButtonsWrapper,
@@ -12,6 +12,9 @@ import {
   useUpdateClientMutation,
 } from "../../store/api/clientsApi";
 import { EditableCell } from "../EditableCell/EditableCell";
+import { ProductTable } from "../ProductTable/ProductTable";
+
+
 
 export const ManagementMaker = () => {
   const [isOpenAddClientModal, setIsOpenAddClientModal] = React.useState(false);
@@ -268,6 +271,10 @@ export const ManagementMaker = () => {
           }}
           bordered
           dataSource={convertedClientsData || allClientsData}
+          expandable={{
+            expandedRowRender: (record) => <ProductTable products={record.products} />,
+            rowExpandable: (record) => Array.isArray(record.products) && record.products.length > 0,
+          }}
           columns={mergedColumns}
           pagination={false}
         />

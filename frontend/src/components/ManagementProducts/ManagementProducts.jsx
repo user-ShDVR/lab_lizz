@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Popconfirm, Button} from "antd";
+import { Form, Popconfirm, Button } from "antd";
 import {
   ActionsTableWrapper,
   ManageButtonsWrapper,
@@ -27,7 +27,7 @@ export const ManagementProducts = () => {
     useUpdateProductMutation();
 
   const [deleteProduct, { isLoading: isDeleteLoading }] =
-  useDeleteProductMutation();
+    useDeleteProductMutation();
 
   const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
@@ -67,9 +67,7 @@ export const ManagementProducts = () => {
 
   const handleDelete = async (key) => {
     const dataSource = [...productsData];
-    const productToDelete = dataSource.find(
-      (item) => item.id === key
-    );
+    const productToDelete = dataSource.find((item) => item.id === key);
 
     try {
       await deleteProduct(productToDelete.id.toString());
@@ -78,7 +76,6 @@ export const ManagementProducts = () => {
       console.error("Error deleting product:", error);
     }
   };
-
 
   const columns = [
     {
@@ -110,26 +107,34 @@ export const ManagementProducts = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Клиент",
-      dataIndex: "client_code",
-      width: "12%",
+      title: "Производитель",
+      dataIndex: "makerId",
+      width: "20%",
       editable: true,
       render: (clientCode) => {
-        const client = clientsData?.find(
-          (emp) => emp.client_code === clientCode
-        );
-        return `${client?.surname} ${client?.name} ${client?.lastname}` || clientCode;
+        const client = clientsData?.find((emp) => emp.id === clientCode);
+        return `${client?.companyName}` || clientCode;
       },
       sorter: (a, b) => {
-        const aClient = clientsData?.find(
-          (emp) => emp.client_code === a.client_code
-        );
-        const bClient = clientsData?.find(
-          (emp) => emp.client_code === b.client_code
-        );
-        return aClient?.full_name?.localeCompare(
-          bClient?.full_name || b.client_code
-        );
+        const aClient = clientsData?.find((emp) => emp.id === a.id);
+        const bClient = clientsData?.find((emp) => emp.id === b.id);
+        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
+      },
+      sortDirections: ["ascend", "descend"],
+    },
+    {
+      title: "Держатель товара",
+      dataIndex: "ownerId",
+      width: "20%",
+      editable: true,
+      render: (clientCode) => {
+        const client = clientsData?.find((emp) => emp.id === clientCode);
+        return `${client?.companyName}` || clientCode;
+      },
+      sorter: (a, b) => {
+        const aClient = clientsData?.find((emp) => emp.id === a.id);
+        const bClient = clientsData?.find((emp) => emp.id === b.id);
+        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
       },
       sortDirections: ["ascend", "descend"],
     },
@@ -214,6 +219,20 @@ export const ManagementProducts = () => {
             },
           }}
           bordered
+          expandable={{
+            expandedRowRender: (record) => (
+              <ul>
+                {record.characteristics.map((char) => (
+                  <li key={char.id}>
+                    {char.name}: {char.value}
+                  </li>
+                ))}
+              </ul>
+            ),
+            rowExpandable: (record) =>
+              Array.isArray(record.characteristics) &&
+              record.characteristics.length > 0,
+          }}
           dataSource={allProductsData}
           columns={mergedColumns}
           pagination={false}
