@@ -21,7 +21,7 @@ export class WarehouseService {
     if (user.role != 'DISTRIBUTOR') {
       throw new BadRequestException('Пользователь не является дистрибьютором');
     }
-    // return await this.db.warehouse.create({ data: createWarehouseDto });
+    return await this.db.warehouse.create({ data: createWarehouseDto });
   }
 
   async findAll() {

@@ -26,6 +26,11 @@ export class ProductController {
     return this.productService.findAll();
   }
 
+  @Get('owner/:id')
+  findAllByOwnerId(@Param('id') id: string) {
+    return this.productService.findAllByOwnerId(+id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productService.findOne(+id);

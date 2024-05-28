@@ -29,8 +29,15 @@ export class CreateCheckDto {
     @IsOptional()
     makerId?: number
 
+    @ApiProperty({ example: 1000 })   
+    @IsNumber()
+    @IsNotEmpty()
+    @IsOptional()
+    price: number
+
     @ApiProperty({ example: "SALE" }) 
     @IsString()
     @IsNotEmpty()
     type: any
+
 }
