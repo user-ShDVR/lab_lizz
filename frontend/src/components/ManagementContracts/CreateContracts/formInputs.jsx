@@ -2,7 +2,7 @@ import { DatePicker, Input, Select } from "antd";
 import { CreateForm } from "../../../styles/createFormsStyles";
 import locale from "antd/es/date-picker/locale/ru_RU";
 import { useGetAllClientsQuery } from "../../../store/api/clientsApi";
-import { useGetAllPledgesQuery } from "../../../store/api/pledgesApi";
+import { useGetAllPledgesQuery } from "../../../store/api/productsApi";
 import { useGetAllEmployeesQuery } from "../../../store/api/employeesApi";
 
 export const FormInputs = () => {

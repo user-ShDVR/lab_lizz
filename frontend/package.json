@@ -20,7 +20,8 @@
     "react-router-dom": "^6.19.0",
     "react-toastify": "^10.0.5",
     "sass": "^1.69.5",
-    "styled-components": "^6.1.1"
+    "styled-components": "^6.1.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

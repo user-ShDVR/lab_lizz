@@ -1,30 +1,30 @@
 import { Tabs, Typography } from "antd";
-import { ManagementClients } from "./components/ManagementClients/ManagementClients";
-import { ManagementEmployees } from "./components/ManagementEmployees/ManagementEmployees";
-import { ManagementPledges } from "./components/ManagementPledges/ManagementPledges";
-import { ManagementContracts } from "./components/ManagementContracts/ManagementContracts";
+import { ManagementMaker } from "./components/ManagementMaker/ManagementMaker";
+import { ManagementDistributor } from "./components/ManagementDistributor/ManagementDistributor";
+import { ManagementDiler } from "./components/ManagementDiler/ManagementDiler";
+import { ManagementProducts } from "./components/ManagementProducts/ManagementProducts";
 
 function App() {
   const tabs = [
     {
-      key: "clients",
-      label: "Клиенты",
-      children: <ManagementClients />,
+      key: "maker",
+      label: "Производитель",
+      children: <ManagementMaker />,
     },
     {
-      key: "employees",
-      label: "Сотрудники",
-      children: <ManagementEmployees />,
+      key: "distibutor",
+      label: "Дистрибьютор",
+      children: <ManagementDistributor />,
     },
     {
-      key: "pledges",
-      label: "Кредиты",
-      children: <ManagementPledges />,
+      key: "diler",
+      label: "Дилер",
+      children: <ManagementDiler />,
     },
     {
-      key: "contracts",
-      label: "Договоры",
-      children: <ManagementContracts />,
+      key: "products",
+      label: "Продукты",
+      children: <ManagementProducts />,
     },
   ];
 

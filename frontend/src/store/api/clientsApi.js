@@ -6,147 +6,46 @@ export const clientsApi = createApi({
   reducerPath: "clientsApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: `${BASE_URL}/api`,
+    baseUrl: `${BASE_URL}/`,
   }),
 
   endpoints: (builder) => ({
     createClient: builder.mutation({
       query(data) {
         return {
-          url: "clients",
+          url: "user",
           method: "POST",
           body: data,
         };
       },
     }),
 
+    getAllClientsByRole: builder.query({
+      query: ({role}) => ({
+        url: `user/role`,
+        method: "GET",
+        params: { role },
+      }),
+    }),
+
     getAllClients: builder.query({
-      query: () => "clients",
+      query: () => "user",
     }),
 
     updateClient: builder.mutation({
-      query: ({ client_code, data }) => ({
-        url: `clients/${client_code}`,
+      query: ({ userId, data }) => ({
+        url: `user/${userId}`,
         method: "PATCH",
-        body: { client_code, ...data },
+        body: { ...data },
       }),
     }),
 
     deleteClient: builder.mutation({
-      query: (id) => ({
-        url: `clients/${id}`,
+      query: (userId) => ({
+        url: `user/${userId}`,
         method: "DELETE",
       }),
     }),
-
-    getFirstTenClients: builder.query({
-      query: () => ({
-        url: "clients/findFirst10Clients",
-      }),
-    }),
-
-    getLastFifteenClients: builder.query({
-      query: () => ({
-        url: "clients/findLast15Clients",
-      }),
-    }),
-
-    getAveragePayoutToClient: builder.query({
-      query: () => ({
-        url: "clients/averagePayout",
-      }),
-    }),
-
-    getMaxPayoutToClient: builder.query({
-      query: () => ({
-        url: "clients/maxPayout",
-      }),
-    }),
-
-    getMinPayoutToClient: builder.query({
-      query: () => ({
-        url: "clients/minPayout",
-      }),
-    }),
-
-    getClientsWithPayoutBetween: builder.mutation({
-      query: (data) => ({
-        url: "clients/clientsWithPayoutBetween",
-        method: "POST",
-        body: data,
-      }),
-    }),
-
-    getCountContractsPerClient: builder.query({
-      query: () => ({
-        url: "clients/countContractsPerClient",
-      }),
-    }),
-
-    getFindClientsWithNamesStartingAOrB: builder.query({
-      query: () => ({
-        url: "clients/findClientsWithNamesStartingAOrB",
-      }),
-    }),
-
-    getFindUniqueClientAddress: builder.query({
-      query: () => ({
-        url: "clients/findUniqueClientAddress",
-      }),
-    }),
-
-    getClientById: builder.query({
-      query: (id) => ({
-        url: `clients/${id}`,
-      }),
-    }),
-
-    findClientsByNamePattern: builder.mutation({
-      query: (data) => ({
-        url: "clients/findClientsByNamePattern",
-        method: "POST",
-        body: data,
-      }),
-    }),
-
-    getFindClientsWithAddressAndNoPhoneNumber: builder.query({
-      query: () => ({
-        url: "clients/findClientsWithAddressAndNoPhoneNumber",
-      }),
-    }),
-
-    getFindClientsWithAddressOrPhoneNumber: builder.query({
-      query: () => ({
-        url: "clients/findClientsWithAddressOrPhoneNumber",
-      }),
-    }),
-
-    getFindClientsWithoutAddressOrPhoneNumber: builder.query({
-      query: () => ({
-        url: "clients/findClientsWithoutAddressOrPhoneNumber",
-      }),
-    }),
-
-    getClientsWithDefiniteAddress: builder.mutation({
-      query: (data) => ({
-        url: "clients/exists",
-        method: "POST",
-        body: data,
-      }),
-    }),
-
-    getFindClientsWithPhoneNumber: builder.query({
-      query: () => ({
-        url: "clients/findClientsWithPhoneNumber",
-      }),
-    }),
-
-    getFindClientsCelebratingEveryFiveYearsAnniversaryNextMonth:
-      builder.query({
-        query: () => ({
-          url: "clients/findClientsCelebratingEveryFiveYearsAnniversaryNextMonth",
-        }),
-      }),
   }),
 });
 
@@ -154,22 +53,6 @@ export const {
   useCreateClientMutation,
   useUpdateClientMutation,
   useDeleteClientMutation,
+  useGetAllClientsByRoleQuery,
   useGetAllClientsQuery,
-  useGetFirstTenClientsQuery,
-  useGetLastFifteenClientsQuery,
-  useGetAveragePayoutToClientQuery,
-  useGetMaxPayoutToClientQuery,
-  useGetMinPayoutToClientQuery,
-  useGetClientsWithPayoutBetweenMutation,
-  useGetCountContractsPerClientQuery,
-  useGetFindClientsWithNamesStartingAOrBQuery,
-  useGetFindUniqueClientAddressQuery,
-  useGetClientByIdQuery,
-  useFindClientsByNamePatternMutation,
-  useGetFindClientsWithAddressAndNoPhoneNumberQuery,
-  useGetFindClientsWithAddressOrPhoneNumberQuery,
-  useGetFindClientsWithoutAddressOrPhoneNumberQuery,
-  useGetClientsWithDefiniteAddressMutation,
-  useGetFindClientsWithPhoneNumberQuery,
-  useGetFindClientsCelebratingEveryFiveYearsAnniversaryNextMonthQuery,
 } = clientsApi;

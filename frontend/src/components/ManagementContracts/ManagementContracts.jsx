@@ -7,7 +7,7 @@ import {
 } from "../../styles/managementTableStyles";
 import { CreateContracts } from "./CreateContracts/CreateContracts";
 import { useGetAllClientsQuery } from "../../store/api/clientsApi";
-import { useGetAllPledgesQuery } from "../../store/api/pledgesApi";
+import { useGetAllPledgesQuery } from "../../store/api/productsApi";
 import { useGetAllEmployeesQuery } from "../../store/api/employeesApi";
 import {
   useDeleteContractMutation,
@@ -149,7 +149,6 @@ export const ManagementContracts = () => {
 
   const filteredData = contractsData
     ? contractsData?.filter((contract) => {
-        const searchRegex = new RegExp(searchValue, "i");
         return (
           searchRegex.test(contract.contract_code) ||
           searchRegex.test(formatDate(contract.creation_date)) ||

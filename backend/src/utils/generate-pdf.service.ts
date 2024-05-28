@@ -1,47 +1,46 @@
 import { Injectable } from '@nestjs/common';
-import { Decimal } from '@prisma/client/runtime/library';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as PDFDocument from 'pdfkit';
-
-interface IContractData {
-  contract_code: number;
-  contract_term: number;
-  contract_amount: Decimal;
-  creation_date: Date;
-  monthly_payment: Decimal;
-  client_code: number;
-  credit_code: number;
-  employee_code: number;
-  clients: {
-    surname: string;
-    name: string;
-    lastname: string;
-    phone_number: string;
-    passport_data: string;
-  };
-  employees: {
-    surname: string;
-    name: string;
-    lastname: string;
-    phone_number: string;
-  };
-  credit: {
-    credit_name: string;
-    interest_rate: Decimal;
-  };
-}
+import { PrismaService } from './prisma.service'; // Подключаем сервис Prisma
 
 @Injectable()
 export class GeneratePdfService {
-  async generatePDF(contractData: IContractData): Promise<string> {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async generatePDF(checkId: number): Promise<string> {
+    const check = await this.prisma.check.findUnique({
+      where: { id: checkId },
+      include: {
+        product: {
+          include: {
+            maker: true,
+          },
+        },
+        distributor: true,
+        maker: true,
+        diler: true,
+      },
+    });
+
+    let type;
+
+    switch (check.type) {
+      case 'SALE':
+        type = 'договор на продажу товаров';
+        break;
+      case 'RECEPTION':
+        type = 'договор на приём товаров';
+        break;
+    }
+
     const doc = new PDFDocument();
     const filename = path.join(
       __dirname,
       '..',
       '..',
       'uploads',
-      `${contractData.contract_code}.pdf`,
+      `${checkId}.pdf`,
     );
     const stream = fs.createWriteStream(filename);
 
@@ -49,55 +48,46 @@ export class GeneratePdfService {
     const fontPath = path.join(__dirname, '..', '..', 'fonts', 'arial.ttf');
     doc.font(fontPath);
 
+    doc.fontSize(14).text('Данные чека:', { align: 'center', lineGap: 20 });
+
+    doc.fontSize(12).text(`Количество продукта: ${check.productQuantity}`);
+    doc.fontSize(12).text(`Дата: ${check.date}`);
+
     doc
       .fontSize(14)
-      .text('Данные контракта:', { align: 'center', lineGap: 20 });
+      .text('Информация о продукте:', { align: 'center', lineGap: 20 });
+    doc.fontSize(12).text(`Наименование продукта: ${check.product.name}`);
+    doc.fontSize(12).text(`Цена продукта: ${check.product.price}`);
 
-    // Выводим основные данные контракта
-    doc.fontSize(12).text(`Код контракта: ${contractData.contract_code}`);
-    doc.fontSize(12).text(`Сумма контракта: ${contractData.contract_amount}₽`);
+    doc
+      .fontSize(14)
+      .text('Информация о дистрибьюторе:', { align: 'center', lineGap: 20 });
+    doc.fontSize(12).text(`Наименование: ${check.distributor.companyName}`);
     doc
       .fontSize(12)
-      .text(`Срок контракта (месяцы): ${contractData.contract_term}`);
+      .text(`Юридический адрес: ${check.distributor.legalAddress}`);
     doc
       .fontSize(12)
-      .text(`Ежемесячный платеж: ${contractData.monthly_payment}`);
-    // Выводим таблицу с оплатами
-    doc.fontSize(14).text('Таблица оплат:', { align: 'center', lineGap: 20 });
+      .text(`Контактный номер: ${check.distributor.contactNumber}`);
 
-    // Заголовок таблицы
-    doc.fontSize(12).text('Месяц', 200, doc.y, { width: 100, align: 'center' });
-    doc
-      .fontSize(12)
-      .text('Сумма оплаты', 200, doc.y, { width: 100, align: 'center' });
-
-    // Линии между заголовком и данными таблицы
-    doc
-      .moveTo(50, doc.y + 10)
-      .lineTo(200, doc.y + 10)
-      .stroke();
-
-    // Данные таблицы
-    for (let i = 1; i <= contractData.contract_term; i++) {
-      const paymentDate = new Date(contractData.creation_date);
-      paymentDate.setMonth(paymentDate.getMonth() + i);
-      const formattedDate = paymentDate.toLocaleDateString('ru-RU');
-
-      // Линии между данными таблицы
+    if (check.maker) {
       doc
-        .moveTo(50, doc.y + 10)
-        .lineTo(400, doc.y + 10)
-        .stroke();
-
-      doc.moveDown(); // Переход на следующую строку для новых данных
+        .fontSize(14)
+        .text('Информация о производителе:', { align: 'center', lineGap: 20 });
+      doc.fontSize(12).text(`Наименование: ${check.maker.companyName}`);
+      doc.fontSize(12).text(`Юридический адрес: ${check.maker.legalAddress}`);
+      doc.fontSize(12).text(`Контактный номер: ${check.maker.contactNumber}`);
+    } else if (check.diler) {
       doc
-        .fontSize(12)
-        .text(formattedDate, 200, doc.y, { width: 100, align: 'center' });
-      doc.fontSize(12).text(`${contractData.monthly_payment}₽`, 200, doc.y, {
-        width: 100,
-        align: 'center',
-      });
+        .fontSize(14)
+        .text('Информация о дилере:', { align: 'center', lineGap: 20 });
+      doc.fontSize(12).text(`Наименование: ${check.diler.companyName}`);
+      doc.fontSize(12).text(`Юридический адрес: ${check.diler.legalAddress}`);
+      doc.fontSize(12).text(`Контактный номер: ${check.diler.contactNumber}`);
     }
+
+    doc.fontSize(14).text('Тип чека:', { align: 'center', lineGap: 20 });
+    doc.fontSize(12).text(`Тип: ${type}`);
 
     doc.end();
 

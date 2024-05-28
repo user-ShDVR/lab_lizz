@@ -2,8 +2,8 @@ import { toast } from "react-toastify";
 import { configureStore, isRejectedWithValue } from "@reduxjs/toolkit";
 import { clientsApi } from "./api/clientsApi";
 import { employeesApi } from "./api/employeesApi";
-import { pledgesApi } from "./api/pledgesApi";
 import { contractsApi } from "./api/contractsApi";
+import { productsApi } from "./api/productsApi";
 
 export const rtkQueryErrorLogger =
   () => (next) => (action) => {
@@ -24,7 +24,7 @@ export const store = configureStore({
   reducer: {
     [clientsApi.reducerPath]: clientsApi.reducer,
     [employeesApi.reducerPath]: employeesApi.reducer,
-    [pledgesApi.reducerPath]: pledgesApi.reducer,
+    [productsApi.reducerPath]: productsApi.reducer,
     [contractsApi.reducerPath]: contractsApi.reducer,
   },
   devTools: true,
@@ -33,7 +33,7 @@ export const store = configureStore({
       rtkQueryErrorLogger,
       clientsApi.middleware,
       employeesApi.middleware,
-      pledgesApi.middleware,
+      productsApi.middleware,
       contractsApi.middleware,
     ]),
 });
