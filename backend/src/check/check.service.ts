@@ -19,60 +19,6 @@ export class CheckService {
     private userService: UserService,
     private generatePdfService: GeneratePdfService,
   ) {}
-  async deductProductQuantity(
-    productId: number,
-    quantityToDeduct: number,
-  ): Promise<void> {
-    const warehouseProducts = await this.db.warehouseProduct.findMany({
-      where: { productId: productId },
-    });
-    console.log(warehouseProducts);
-
-    let remainingQuantityToDeduct = quantityToDeduct;
-
-    for (const warehouseProduct of warehouseProducts) {
-      if (remainingQuantityToDeduct <= 0) {
-        break;
-      }
-
-      const currentQuantity = warehouseProduct.quantity;
-
-      if (currentQuantity > remainingQuantityToDeduct) {
-        await this.db.warehouseProduct.update({
-          where: { id: warehouseProduct.id },
-          data: { quantity: currentQuantity - remainingQuantityToDeduct },
-        });
-        remainingQuantityToDeduct = 0;
-      } else {
-        await this.db.warehouseProduct.delete({
-          where: { id: warehouseProduct.id },
-        });
-        remainingQuantityToDeduct -= currentQuantity;
-      }
-    }
-
-    if (remainingQuantityToDeduct > 0) {
-      throw new BadRequestException(
-        'Недостаточно продуктов на складе для выполнения вычитания',
-      );
-    }
-
-    // Обновляем количество продуктов
-    const product = await this.db.product.findUnique({
-      where: { id: productId, deleted: false },
-    });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    const updatedQuantity = product.quantity - quantityToDeduct;
-
-    await this.db.product.update({
-      where: { id: productId },
-      data: { quantity: updatedQuantity },
-    });
-  }
   async create(createCheckDto: CreateCheckDto) {
     if (createCheckDto.type !== 'SALE' && createCheckDto.type !== 'RECEPTION') {
       throw new BadRequestException('Чек типа RECEPTION или SALE');
@@ -83,10 +29,6 @@ export class CheckService {
 
     if (createCheckDto.type === 'RECEPTION' && !createCheckDto.makerId) {
       throw new BadRequestException('Укажите Производителя');
-    }
-
-    if (createCheckDto.type === 'SALE' && !createCheckDto.price) {
-      throw new BadRequestException('Укажите Цену');
     }
     const promises = [
       this.userService.findOne(createCheckDto.distributorId),
@@ -139,11 +81,11 @@ export class CheckService {
         const characteristics = await this.db.characteristic.findMany({
           where: { productId: product.id },
         });
-        await this.db.product.create({
+        const newDistProduct = await this.db.product.create({
           data: {
             makerId: createCheckDto.makerId,
             name: product.name,
-            price: product.price,
+            price: createCheckDto.price,
             quantity: createCheckDto.productQuantity,
             ownerId: createCheckDto.distributorId,
             characteristics: {
@@ -155,27 +97,44 @@ export class CheckService {
             },
           },
         });
-      }
-      if (product.quantity === createCheckDto.productQuantity) {
-        await this.db.product.update({
-          where: { id: product.id },
-          data: { ownerId: createCheckDto.distributorId },
+        const warehouse = await this.db.warehouse.findFirst({
+          where: { distributorId: createCheckDto.distributorId },
+        });
+        if (!warehouse) {
+          throw new BadRequestException('Склад не найден');
+        }
+        await this.db.warehouseProduct.create({
+          data: {
+            productId: newDistProduct.id,
+            quantity: createCheckDto.productQuantity,
+            warehouseId: warehouse.id,
+            price: createCheckDto.price,
+          },
         });
       }
-      const warehouse = await this.db.warehouse.findFirst({
-        where: { distributorId: createCheckDto.distributorId },
-      });
-      if (!warehouse) {
-        throw new BadRequestException('Warehouse not found');
+      if (product.quantity === createCheckDto.productQuantity) {
+        const newDistProduct = await this.db.product.update({
+          where: { id: product.id },
+          data: {
+            ownerId: createCheckDto.distributorId,
+            price: createCheckDto.price,
+          },
+        });
+        const warehouse = await this.db.warehouse.findFirst({
+          where: { distributorId: createCheckDto.distributorId },
+        });
+        if (!warehouse) {
+          throw new BadRequestException('Склад не найден');
+        }
+        await this.db.warehouseProduct.create({
+          data: {
+            productId: newDistProduct.id,
+            quantity: createCheckDto.productQuantity,
+            warehouseId: warehouse.id,
+            price: createCheckDto.price,
+          },
+        });
       }
-      await this.db.warehouseProduct.create({
-        data: {
-          productId: product.id,
-          quantity: createCheckDto.productQuantity,
-          warehouseId: warehouse.id,
-          price: createCheckDto.price,
-        },
-      });
     }
 
     if (createCheckDto.dilerId) {
@@ -203,6 +162,9 @@ export class CheckService {
           where: { id: product.id },
           data: { quantity: quantity },
         });
+        const warehouseProduct = await this.db.warehouseProduct.findFirst({
+          where: { productId: product.id },
+        });
         const characteristics = await this.db.characteristic.findMany({
           where: { productId: product.id },
         });
@@ -210,7 +172,7 @@ export class CheckService {
           data: {
             makerId: updProd.makerId,
             name: product.name,
-            price: product.price,
+            price: warehouseProduct.price,
             quantity: createCheckDto.productQuantity,
             ownerId: createCheckDto.dilerId,
             characteristics: {
@@ -222,37 +184,65 @@ export class CheckService {
             },
           },
         });
+        const updatedWarehouseProduct =
+          await this.db.warehouseProduct.updateMany({
+            where: { productId: product.id },
+            data: { quantity: quantity },
+          });
+        console.log(updatedWarehouseProduct);
       }
 
       if (product.quantity === createCheckDto.productQuantity) {
+        const warehouseProduct = await this.db.warehouseProduct.findFirst({
+          where: { productId: product.id },
+        });
         await this.db.product.update({
           where: { id: product.id },
-          data: { ownerId: createCheckDto.distributorId },
+          data: {
+            ownerId: createCheckDto.dilerId,
+            price: warehouseProduct.price,
+          },
+        });
+        await this.db.warehouseProduct.deleteMany({
+          where: { productId: product.id },
         });
       }
-      await this.deductProductQuantity(
-        product.id,
-        createCheckDto.productQuantity,
-      );
     }
 
-    const summary = product.price * createCheckDto.productQuantity;
+    if (createCheckDto.makerId) {
+      const summary = product.price * createCheckDto.productQuantity;
+      const check = await this.db.check.create({
+        data: {
+          productQuantity: createCheckDto.productQuantity,
+          productId: createCheckDto.productId,
+          type: createCheckDto.type,
+          distributorId: createCheckDto.distributorId,
+          dilerId: createCheckDto.dilerId,
+          makerId: createCheckDto.makerId,
+          summary: summary,
+        },
+      });
+      await this.generatePdfService.generatePDF(check.id);
 
-    const check = await this.db.check.create({
-      data: {
-        productQuantity: createCheckDto.productQuantity,
-        productId: createCheckDto.productId,
-        type: createCheckDto.type,
-        distributorId: createCheckDto.distributorId,
-        dilerId: createCheckDto.dilerId,
-        makerId: createCheckDto.makerId,
-        summary: summary,
-      },
-    });
-
-    await this.generatePdfService.generatePDF(check.id);
-
-    return check;
+      return check;
+    } else if (createCheckDto.dilerId) {
+      const warehouseProduct = await this.db.warehouseProduct.findFirst({
+        where: { productId: product.id },
+      });
+      const summary = warehouseProduct.price * createCheckDto.productQuantity;
+      const check = await this.db.check.create({
+        data: {
+          productQuantity: createCheckDto.productQuantity,
+          productId: createCheckDto.productId,
+          type: createCheckDto.type,
+          distributorId: createCheckDto.distributorId,
+          dilerId: createCheckDto.dilerId,
+          summary: summary,
+        },
+      });
+      await this.generatePdfService.generatePDF(check.id);
+      return check;
+    }
   }
 
   async findAll(checkType: string) {

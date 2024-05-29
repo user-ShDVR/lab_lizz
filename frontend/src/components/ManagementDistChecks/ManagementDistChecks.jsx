@@ -210,6 +210,8 @@ export const ManagementDistChecks = () => {
             >
               <Button>Удалить</Button>
             </Popconfirm>
+            <a href={`http://localhost:3000/uploads/${record.id}.pdf`} target="_blank">Экспортировать</a>
+
           </ActionsTableWrapper>
         );
       },

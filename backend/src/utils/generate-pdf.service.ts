@@ -22,6 +22,9 @@ export class GeneratePdfService {
         diler: true,
       },
     });
+    const warehouseProduct = await this.prisma.warehouseProduct.findFirst({
+      where: { productId: check.product.id },
+    });
 
     let type;
 
@@ -50,19 +53,19 @@ export class GeneratePdfService {
 
     doc.fontSize(14).text('Данные чека:', { align: 'center', lineGap: 20 });
 
-    doc.fontSize(12).text(`Количество продукта: ${check.productQuantity}`);
     doc.fontSize(12).text(`Дата: ${check.date}`);
 
     doc
       .fontSize(14)
       .text('Информация о продукте:', { align: 'center', lineGap: 20 });
     doc.fontSize(12).text(`Наименование продукта: ${check.product.name}`);
-    doc.fontSize(12).text(`Количество: ${check.product.quantity}`);
     doc
       .fontSize(12)
       .text(
-        `Общая стоимость: ${check.product.quantity * check.product.price} руб.`,
+        `Цена продукта: ${check.type === 'RECEPTION' ? check.product.price : warehouseProduct.price} руб.`,
       );
+    doc.fontSize(12).text(`Количество продукта: ${check.productQuantity}`);
+    doc.fontSize(12).text(`Общая стоимость: ${check.summary} руб.`);
 
     doc
       .fontSize(14)

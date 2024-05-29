@@ -45,14 +45,6 @@ export const FormInputs = ({ form }) => {
       ),
     },
     {
-      label: "Новая цена (за единицу)",
-      name: "price",
-      rules: [
-        { required: true, message: "Пожалуйста, введите цену!" },
-      ],
-      node: <Input type="number" />,
-    },
-    {
       label: "Количество",
       name: "productQuantity",
       rules: [
