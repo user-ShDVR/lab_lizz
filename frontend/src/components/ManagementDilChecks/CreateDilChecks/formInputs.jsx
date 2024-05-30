@@ -10,18 +10,20 @@ export const FormInputs = ({ form }) => {
   const { data: distributorData } = useGetAllClientsByRoleQuery({ role: "DISTRIBUTOR" });
 
   const [selectedProductId, setSelectedProductId] = useState(null);
+  const [summary, setSummary] = useState(0);
+  const [selectedProduct, setSelectedProduct] = useState();
   const [selectedMakerName, setSelectedMakerName] = useState('');
   const [selectedMakerId, setSelectedMakerId] = useState(null);
 
   useEffect(() => {
     if (selectedProductId && productsData && distributorData) {
-      const selectedProduct = productsData.find(product => product.id === selectedProductId);
+      setSelectedProduct(productsData.find(product => product.id === selectedProductId));
       const distributor = distributorData.find(client => client.id === selectedProduct?.ownerId);
       setSelectedMakerName(distributor ? distributor.companyName : '');
       setSelectedMakerId(distributor ? distributor.id : null);
       form.setFieldsValue({ distributorId: distributor ? distributor.id : null });
     }
-  }, [selectedProductId, productsData, distributorData, form]);
+  }, [selectedProductId, productsData, distributorData, form, selectedProduct]);
 
   const formInputs = [
     {
@@ -50,7 +52,12 @@ export const FormInputs = ({ form }) => {
       rules: [
         { required: true, message: "Пожалуйста, введите количество!" },
       ],
-      node: <Input type="number" />,
+      node: <Input onChange={e => setSummary(selectedProduct ? selectedProduct.price * e.target.value : 0)} type="number" />,
+    },
+    {
+      label: "Сумма",
+      name: "summary",
+      node: <span>{summary} ₽</span>,
     },
     {
       label: "Дистрибьютор",

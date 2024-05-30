@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -38,6 +34,41 @@ model User {
   distributorCheck Check[]     @relation("Distributor")
   dilerCheck       Check[]     @relation("Diler")
 }
+
+model Maker {
+  id             Int
+  companyName    String
+  legalAddress   String
+  contactNumber  String  @unique
+  country        String
+  paymentAccount String  @unique
+  BIK            String  @unique
+  KPP            String  @unique
+  INN            String  @unique
+}
+
+model Distributor {
+  id             Int
+  companyName    String
+  legalAddress   String
+  contactNumber  String  @unique
+  paymentAccount String  @unique
+  BIK            String  @unique
+  KPP            String  @unique
+  INN            String  @unique
+}
+
+model Diler {
+  id             Int
+  companyName    String
+  legalAddress   String
+  contactNumber  String  @unique
+  paymentAccount String  @unique
+  BIK            String  @unique
+  KPP            String  @unique
+  INN            String  @unique
+}
+
 
 model Product {
   id              Int              @id @default(autoincrement())

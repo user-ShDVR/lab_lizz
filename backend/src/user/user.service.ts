@@ -53,8 +53,50 @@ export class UserService {
     if (contactNumber) {
       throw new BadRequestException('Контактный телефон уже существует');
     }
+    const user = await this.db.user.create({ data: createUserDto });
+    if (createUserDto.role === 'MAKER') {
+      await this.db.maker.create({
+        data: {
+          id: user.id,
+          companyName: user.companyName,
+          country: user.country,
+          contactNumber: user.contactNumber,
+          INN: user.INN,
+          BIK: user.BIK,
+          KPP: user.KPP,
+          paymentAccount: user.paymentAccount,
+          legalAddress: user.legalAddress,
+        },
+      });
+    } else if (createUserDto.role === 'DILER') {
+      await this.db.diler.create({
+        data: {
+          id: user.id,
+          companyName: user.companyName,
+          contactNumber: user.contactNumber,
+          INN: user.INN,
+          BIK: user.BIK,
+          KPP: user.KPP,
+          paymentAccount: user.paymentAccount,
+          legalAddress: user.legalAddress,
+        },
+      });
+    } else if (createUserDto.role === 'DISTRIBUTOR') {
+      await this.db.distributor.create({
+        data: {
+          id: user.id,
+          companyName: user.companyName,
+          contactNumber: user.contactNumber,
+          INN: user.INN,
+          BIK: user.BIK,
+          KPP: user.KPP,
+          paymentAccount: user.paymentAccount,
+          legalAddress: user.legalAddress,
+        },
+      });
+    }
 
-    return await this.db.user.create({ data: createUserDto });
+    return user;
   }
 
   async findAll() {
