@@ -158,12 +158,21 @@ export class CheckService {
 
       if (product.quantity > createCheckDto.productQuantity) {
         const quantity = product.quantity - createCheckDto.productQuantity;
+        // расчитать прибль дистрибьютора
+        const distributorProfit =
+          (createCheckDto.price - product.price) *
+          createCheckDto.productQuantity;
+        await this.db.user.updateMany({
+          where: { id: createCheckDto.distributorId },
+          data: { profit: { increment: distributorProfit } },
+        });
+        await this.db.distributor.updateMany({
+          where: { id: createCheckDto.distributorId },
+          data: { profit: { increment: distributorProfit } },
+        });
         const updProd = await this.db.product.update({
           where: { id: product.id },
           data: { quantity: quantity },
-        });
-        const warehouseProduct = await this.db.warehouseProduct.findFirst({
-          where: { productId: product.id },
         });
         const characteristics = await this.db.characteristic.findMany({
           where: { productId: product.id },
@@ -172,7 +181,7 @@ export class CheckService {
           data: {
             makerId: updProd.makerId,
             name: product.name,
-            price: warehouseProduct.price,
+            price: createCheckDto.price,
             quantity: createCheckDto.productQuantity,
             ownerId: createCheckDto.dilerId,
             characteristics: {
@@ -193,14 +202,22 @@ export class CheckService {
       }
 
       if (product.quantity === createCheckDto.productQuantity) {
-        const warehouseProduct = await this.db.warehouseProduct.findFirst({
-          where: { productId: product.id },
+        const distributorProfit =
+          (createCheckDto.price - product.price) *
+          createCheckDto.productQuantity;
+        await this.db.user.updateMany({
+          where: { id: createCheckDto.distributorId },
+          data: { profit: { increment: distributorProfit } },
+        });
+        await this.db.distributor.updateMany({
+          where: { id: createCheckDto.distributorId },
+          data: { profit: { increment: distributorProfit } },
         });
         await this.db.product.update({
           where: { id: product.id },
           data: {
             ownerId: createCheckDto.dilerId,
-            price: warehouseProduct.price,
+            price: createCheckDto.price,
           },
         });
         await this.db.warehouseProduct.deleteMany({
@@ -226,10 +243,7 @@ export class CheckService {
 
       return check;
     } else if (createCheckDto.dilerId) {
-      const warehouseProduct = await this.db.warehouseProduct.findFirst({
-        where: { productId: product.id },
-      });
-      const summary = warehouseProduct.price * createCheckDto.productQuantity;
+      const summary = createCheckDto.price * createCheckDto.productQuantity;
       const check = await this.db.check.create({
         data: {
           productQuantity: createCheckDto.productQuantity,

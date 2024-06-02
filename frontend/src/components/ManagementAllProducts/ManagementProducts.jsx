@@ -10,7 +10,7 @@ import { useGetAllClientsQuery } from "../../store/api/clientsApi";
 import {
   useUpdateProductMutation,
   useDeleteProductMutation,
-  useGetAllProductsByMakerQuery,
+  useGetAllProductsByDistributorQuery,
 } from "../../store/api/productsApi";
 import { EditableCell } from "../EditableCell/EditableCell";
 
@@ -19,7 +19,7 @@ export const ManagementProducts = () => {
   const [form] = Form.useForm();
 
   const { data: productsData, refetch: refetchProducts } =
-  useGetAllProductsByMakerQuery();
+    useGetAllProductsByDistributorQuery();
 
   const { data: clientsData } = useGetAllClientsQuery();
 
@@ -214,11 +214,6 @@ export const ManagementProducts = () => {
 
   return (
     <>
-      <ManageButtonsWrapper>
-        <Button loading={isDeleteLoading} onClick={() => setOpen(true)}>
-          Добавить продукт
-        </Button>
-      </ManageButtonsWrapper>
 
       <Form form={form} component={false}>
         <StyledTableAnt

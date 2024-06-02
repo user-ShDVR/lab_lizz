@@ -53,7 +53,20 @@ export class UserService {
     if (contactNumber) {
       throw new BadRequestException('Контактный телефон уже существует');
     }
-    const user = await this.db.user.create({ data: createUserDto });
+    const user = await this.db.user.create({
+      data: {
+        role: createUserDto.role,
+        companyName: createUserDto.companyName,
+        contactNumber: createUserDto.contactNumber,
+        INN: createUserDto.INN,
+        BIK: createUserDto.BIK,
+        KPP: createUserDto.KPP,
+        paymentAccount: createUserDto.paymentAccount,
+        legalAddress: createUserDto.legalAddress,
+        country: createUserDto.role === 'MAKER' ? createUserDto.country : null,
+        profit: createUserDto.role === 'DISTRIBUTOR' ? 0 : null,
+      },
+    });
     if (createUserDto.role === 'MAKER') {
       await this.db.maker.create({
         data: {
@@ -92,6 +105,7 @@ export class UserService {
           KPP: user.KPP,
           paymentAccount: user.paymentAccount,
           legalAddress: user.legalAddress,
+          profit: 0,
         },
       });
     }
@@ -117,6 +131,7 @@ export class UserService {
         legalAddress: true,
         country: true,
         contactNumber: true,
+        profit: true,
         products: {
           where: { deleted: false },
           select: {
@@ -199,16 +214,70 @@ export class UserService {
     if (contactNumber) {
       throw new BadRequestException('Контактный телефон уже существует');
     }
-    return await this.db.user.update({
+    const updUser = await this.db.user.update({
       where: { id },
       data: {
         ...updateUserDto,
       },
     });
+    if (updUser.role === 'MAKER') {
+      await this.db.maker.updateMany({
+        where: { id: updUser.id },
+        data: {
+          id: updUser.id,
+          companyName: updUser.companyName,
+          country: updUser.country,
+          contactNumber: updUser.contactNumber,
+          INN: updUser.INN,
+          BIK: updUser.BIK,
+          KPP: updUser.KPP,
+          paymentAccount: updUser.paymentAccount,
+          legalAddress: updUser.legalAddress,
+        },
+      });
+    } else if (updUser.role === 'DILER') {
+      await this.db.diler.updateMany({
+        where: { id: updUser.id },
+        data: {
+          id: updUser.id,
+          companyName: updUser.companyName,
+          contactNumber: updUser.contactNumber,
+          INN: updUser.INN,
+          BIK: updUser.BIK,
+          KPP: updUser.KPP,
+          paymentAccount: updUser.paymentAccount,
+          legalAddress: updUser.legalAddress,
+        },
+      });
+    } else if (updUser.role === 'DISTRIBUTOR') {
+      await this.db.distributor.updateMany({
+        where: { id: updUser.id },
+        data: {
+          id: updUser.id,
+          companyName: updUser.companyName,
+          contactNumber: updUser.contactNumber,
+          INN: updUser.INN,
+          BIK: updUser.BIK,
+          KPP: updUser.KPP,
+          paymentAccount: updUser.paymentAccount,
+          legalAddress: updUser.legalAddress,
+          profit: updUser.profit,
+        },
+      });
+    }
+    return updUser;
   }
 
   async remove(id: number) {
-    await this.findOne(id);
-    return await this.db.user.delete({ where: { id } });
+    const user =await this.findOne(id);
+    await this.db.user.delete({ where: { id } });
+    if (user.role === 'MAKER') {
+      await this.db.maker.deleteMany({ where: { id } });
+    } else if (user.role === 'DILER') {
+      await this.db.diler.deleteMany({ where: { id } });
+    } else if (user.role === 'DISTRIBUTOR') {
+      await this.db.distributor.deleteMany({ where: { id } });
+    }
+    return user;
   }
 }

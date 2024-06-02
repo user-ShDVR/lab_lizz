@@ -101,7 +101,7 @@ export const ManagementDistributor = () => {
       editable: true,
       sorter: {
         compare: (a, b) => a.id - b.id,
-        multiple: 10,
+        multiple: 9,
       },
     },
     {
@@ -111,7 +111,7 @@ export const ManagementDistributor = () => {
       editable: true,
       sorter: {
         compare: (a, b) => a.companyName - b.companyName,
-        multiple: 10,
+        multiple: 8,
       },
     },
     {
@@ -141,7 +141,7 @@ export const ManagementDistributor = () => {
       editable: true,
       sorter: {
         compare: (a, b) => a.paymentAccount - b.paymentAccount,
-        multiple: 4,
+        multiple: 5,
       },
     },
     {
@@ -151,7 +151,7 @@ export const ManagementDistributor = () => {
       editable: true,
       sorter: {
         compare: (a, b) => a.BIK - b.BIK,
-        multiple: 3,
+        multiple: 4,
       },
     },
     {
@@ -161,7 +161,7 @@ export const ManagementDistributor = () => {
       editable: true,
       sorter: {
         compare: (a, b) => a.INN - b.INN,
-        multiple: 2,
+        multiple: 3,
       },
     },
     {
@@ -171,6 +171,17 @@ export const ManagementDistributor = () => {
       editable: true,
       sorter: {
         compare: (a, b) => a.KPP - b.KPP,
+        multiple: 2,
+      },
+    },
+    {
+      title: "Прибыль",
+      dataIndex: "profit",
+      width: "5%",
+      editable: false,
+      render: (quantity) => `${quantity} ₽`,
+      sorter: {
+        compare: (a, b) => a.profit - b.profit,
         multiple: 1,
       },
     },

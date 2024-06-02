@@ -21,6 +21,7 @@ model User {
   legalAddress   String
   contactNumber  String  @unique
   country        String?
+  profit         Int?
   paymentAccount String  @unique
   BIK            String  @unique
   KPP            String  @unique
@@ -33,6 +34,7 @@ model User {
   makerCheck       Check[]     @relation("Maker")
   distributorCheck Check[]     @relation("Distributor")
   dilerCheck       Check[]     @relation("Diler")
+  
 }
 
 model Maker {
@@ -56,6 +58,7 @@ model Distributor {
   BIK            String  @unique
   KPP            String  @unique
   INN            String  @unique
+  profit         Int
 }
 
 model Diler {
@@ -75,9 +78,9 @@ model Product {
   name            String
   price           Int
   makerId         Int
-  maker           User             @relation("MakerProducts", fields: [makerId], references: [id])
+  maker           User             @relation("MakerProducts", fields: [makerId], references: [id], onDelete: Cascade)
   ownerId         Int
-  owner           User             @relation("OwnerProducts", fields: [ownerId], references: [id])
+  owner           User             @relation("OwnerProducts", fields: [ownerId], references: [id], onDelete: Cascade)
   characteristics Characteristic[]
   quantity        Int
 
@@ -93,7 +96,7 @@ model Characteristic {
   value     String
   rowKey    String
   productId Int
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 enum CheckType {
@@ -107,16 +110,16 @@ model Check {
   date            DateTime @default(now())
 
   productId Int
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   distributorId Int
-  distributor   User @relation("Distributor", fields: [distributorId], references: [id])
+  distributor   User @relation("Distributor", fields: [distributorId], references: [id], onDelete: Cascade)
 
   makerId Int?
-  maker   User? @relation("Maker", fields: [makerId], references: [id])
+  maker   User? @relation("Maker", fields: [makerId], references: [id], onDelete: Cascade)
 
   dilerId Int?
-  diler   User? @relation("Diler", fields: [dilerId], references: [id])
+  diler   User? @relation("Diler", fields: [dilerId], references: [id], onDelete: Cascade)
 
   summary Int
 
@@ -128,7 +131,7 @@ model Warehouse {
   name          String
   address       String
   distributorId Int
-  distributor   User    @relation(fields: [distributorId], references: [id])
+  distributor   User    @relation(fields: [distributorId], references: [id], onDelete: Cascade)
   warehouseProducts WarehouseProduct[]
 }
 
@@ -140,5 +143,5 @@ model WarehouseProduct {
   price         Int
 
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
-  product     Product   @relation(fields: [productId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

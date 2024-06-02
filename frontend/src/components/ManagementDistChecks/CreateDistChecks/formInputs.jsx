@@ -11,6 +11,8 @@ export const FormInputs = ({ form }) => {
 
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedMakerName, setSelectedMakerName] = useState('');
+  const [selectedProductPrice, setSelectedProductPrice] = useState(null);
+  
   const [selectedMakerId, setSelectedMakerId] = useState(null);
 
   useEffect(() => {
@@ -19,7 +21,10 @@ export const FormInputs = ({ form }) => {
       const maker = makerData.find(client => client.id === selectedProduct?.makerId);
       setSelectedMakerName(maker ? maker.companyName : '');
       setSelectedMakerId(maker ? maker.id : null);
+      setSelectedProductPrice(selectedProduct ? selectedProduct.price : 0);
       form.setFieldsValue({ makerId: maker ? maker.id : null });
+      form.setFieldsValue({ price: selectedProduct ? selectedProduct.price : 0 });
+
     }
   }, [selectedProductId, productsData, makerData, form]);
 
@@ -45,12 +50,9 @@ export const FormInputs = ({ form }) => {
       ),
     },
     {
-      label: "Новая цена (за единицу)",
-      name: "price",
-      rules: [
-        { required: true, message: "Пожалуйста, введите цену!" },
-      ],
-      node: <Input type="number" />,
+      label: "Цена за штуку",
+      name: "productPrice",
+      node: <span>{selectedProductPrice} ₽</span>,
     },
     {
       label: "Количество",
@@ -89,6 +91,12 @@ export const FormInputs = ({ form }) => {
     {
       label: "",
       name: "makerId",
+      rules: [],
+      node: <Input type="hidden" />,
+    },
+    {
+      label: "",
+      name: "price",
       rules: [],
       node: <Input type="hidden" />,
     },

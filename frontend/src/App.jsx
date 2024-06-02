@@ -3,6 +3,8 @@ import { ManagementMaker } from "./components/ManagementMaker/ManagementMaker";
 import { ManagementDistributor } from "./components/ManagementDistributor/ManagementDistributor";
 import { ManagementDiler } from "./components/ManagementDiler/ManagementDiler";
 import { ManagementProducts } from "./components/ManagementProducts/ManagementProducts";
+import { ManagementProducts as ManagementAllProducts } from "./components/ManagementAllProducts/ManagementProducts";
+
 import { ManagementWarehouse } from "./components/ManagementWarehouse/ManagementWarehouse";
 import { ManagementDistChecks } from "./components/ManagementDistChecks/ManagementDistChecks";
 import { ManagementDilChecks } from "./components/ManagementDilChecks/ManagementDilChecks";
@@ -16,7 +18,7 @@ function App() {
     },
     {
       key: "products",
-      label: "Продукты",
+      label: "Продукты(производителя)",
       children: <ManagementProducts />,
     },
     {
@@ -33,6 +35,11 @@ function App() {
       key: "warehouse",
       label: "Склад",
       children: <ManagementWarehouse />,
+    },
+    {
+      key: "allProducts",
+      label: "Продукты(дистрибьютора)",
+      children: <ManagementAllProducts />,
     },
     {
       key: "dilChecks",

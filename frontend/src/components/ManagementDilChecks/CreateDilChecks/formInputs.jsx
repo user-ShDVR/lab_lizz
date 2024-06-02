@@ -11,19 +11,34 @@ export const FormInputs = ({ form }) => {
 
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [summary, setSummary] = useState(0);
+  const [price, setPrice] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState();
   const [selectedMakerName, setSelectedMakerName] = useState('');
   const [selectedMakerId, setSelectedMakerId] = useState(null);
 
   useEffect(() => {
     if (selectedProductId && productsData && distributorData) {
-      setSelectedProduct(productsData.find(product => product.id === selectedProductId));
-      const distributor = distributorData.find(client => client.id === selectedProduct?.ownerId);
+      const selected = productsData.find(product => product.id === selectedProductId);
+      setSelectedProduct(selected);
+      const distributor = distributorData.find(client => client.id === selected?.ownerId);
       setSelectedMakerName(distributor ? distributor.companyName : '');
       setSelectedMakerId(distributor ? distributor.id : null);
+      setPrice(selected ? selected.price : 0);
       form.setFieldsValue({ distributorId: distributor ? distributor.id : null });
     }
-  }, [selectedProductId, productsData, distributorData, form, selectedProduct]);
+  }, [selectedProductId, productsData, distributorData, form]);
+
+  const handleQuantityChange = (e) => {
+    const quantity = e.target.value;
+    setSummary(selectedProduct ? price * quantity : 0);
+  };
+
+  const handlePriceChange = (e) => {
+    const newPrice = e.target.value;
+    setPrice(newPrice);
+    const quantity = form.getFieldValue('productQuantity') || 0;
+    setSummary(selectedProduct ? newPrice * quantity : 0);
+  };
 
   const formInputs = [
     {
@@ -52,7 +67,15 @@ export const FormInputs = ({ form }) => {
       rules: [
         { required: true, message: "Пожалуйста, введите количество!" },
       ],
-      node: <Input onChange={e => setSummary(selectedProduct ? selectedProduct.price * e.target.value : 0)} type="number" />,
+      node: <Input onChange={handleQuantityChange} type="number" />,
+    },
+    {
+      label: "Цена за штуку",
+      name: "price",
+      rules: [
+        { required: true, message: "Пожалуйста, введите цену!" },
+      ],
+      node: <Input value={price} onChange={handlePriceChange} min={selectedProduct ? selectedProduct.price : 0} type="number" />,
     },
     {
       label: "Сумма",
@@ -84,7 +107,6 @@ export const FormInputs = ({ form }) => {
         </Select>
       ),
     },
-    // Скрытое поле для передачи distributorId
     {
       label: "",
       name: "distributorId",
