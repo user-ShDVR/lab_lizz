@@ -35,7 +35,7 @@ export const ProductWTable = ({ products }) => {
     {
       title: 'Количество',
       dataIndex: 'quantity',
-      key: 'price',
+      key: 'quantity',
       render: (quantity) => `${quantity}`,
     },
   ];

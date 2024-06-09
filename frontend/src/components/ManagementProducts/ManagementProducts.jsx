@@ -79,7 +79,7 @@ export const ManagementProducts = () => {
 
   const columns = [
     {
-      title: "ID продукта",
+      title: "ID товара",
       dataIndex: "id",
       width: "8%",
       sorter: (a, b) => {
@@ -91,7 +91,7 @@ export const ManagementProducts = () => {
     },
 
     {
-      title: "Название продукта",
+      title: "Название товара",
       dataIndex: "name",
       width: "10%",
       editable: true,
@@ -99,41 +99,8 @@ export const ManagementProducts = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Цена",
-      dataIndex: "price",
-      width: "8%",
-      editable: true,
-      render: (text) => `${text} ₽`,
-      sorter: (a, b) => a.price.localeCompare(b.price),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Количество",
-      dataIndex: "quantity",
-      width: "8%",
-      editable: true,
-      sorter: (a, b) => a.quantity.localeCompare(b.quantity),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
       title: "Производитель",
       dataIndex: "makerId",
-      width: "20%",
-      editable: true,
-      render: (clientCode) => {
-        const client = clientsData?.find((emp) => emp.id === clientCode);
-        return `${client?.companyName}` || clientCode;
-      },
-      sorter: (a, b) => {
-        const aClient = clientsData?.find((emp) => emp.id === a.id);
-        const bClient = clientsData?.find((emp) => emp.id === b.id);
-        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
-      },
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Держатель товара",
-      dataIndex: "ownerId",
       width: "20%",
       editable: true,
       render: (clientCode) => {
@@ -216,7 +183,7 @@ export const ManagementProducts = () => {
     <>
       <ManageButtonsWrapper>
         <Button loading={isDeleteLoading} onClick={() => setOpen(true)}>
-          Добавить продукт
+          Добавить товар
         </Button>
       </ManageButtonsWrapper>
 

@@ -3,16 +3,15 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
 } from '@nestjs/common';
 import { CheckService } from './check.service';
 import { CreateCheckDto } from './dto/create-check.dto';
-import { UpdateCheckDto } from './dto/update-check.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { CheckType } from '@prisma/client';
+import { CreateDistCheckDto } from './dto/create-Dcheck.dto';
 @ApiTags('check')
 @Controller('check')
 export class CheckController {
@@ -23,6 +22,11 @@ export class CheckController {
     return this.checkService.create(createCheckDto);
   }
 
+  @Post('dist')
+  createDist(@Body() createCheckDto: CreateDistCheckDto) {
+    return this.checkService.createDistCheck(createCheckDto);
+  }
+
   @Get()
   findAll(@Query('type') type: CheckType) {
     return this.checkService.findAll(type);
@@ -31,11 +35,6 @@ export class CheckController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.checkService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCheckDto: UpdateCheckDto) {
-    return this.checkService.update(+id, updateCheckDto);
   }
 
   @Delete(':id')

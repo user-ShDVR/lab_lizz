@@ -25,10 +25,8 @@ export class ProductService {
     const product = await this.db.product.create({
       data: {
         name: productData.name,
-        price: productData.price,
         makerId: productData.makerId,
         ownerId: productData.makerId,
-        quantity: productData.quantity,
         characteristics: {
           create: characteristics?.map((char) => ({
             name: char.name,
@@ -74,6 +72,7 @@ export class ProductService {
         },
         deleted: false,
       },
+      include: { characteristics: true },
     });
   }
 
@@ -97,6 +96,7 @@ export class ProductService {
         },
         deleted: false,
       },
+      include: { characteristics: true },
     });
   }
 

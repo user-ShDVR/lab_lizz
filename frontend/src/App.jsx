@@ -18,7 +18,7 @@ function App() {
     },
     {
       key: "products",
-      label: "Продукты(производителя)",
+      label: "Справочник товаров",
       children: <ManagementProducts />,
     },
     {

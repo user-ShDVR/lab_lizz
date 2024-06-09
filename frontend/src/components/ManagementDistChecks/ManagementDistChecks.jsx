@@ -7,38 +7,20 @@ import {
 } from "../../styles/managementTableStyles";
 import { CreateDistChecks } from "./CreateDistChecks/CreateDistChecks";
 import { useGetAllClientsQuery } from "../../store/api/clientsApi";
-import {
-} from "../../store/api/checksApi";
-import { EditableCell } from "../EditableCell/EditableCell";
 import { useDeleteCheckMutation, useGetAllChecksQuery, useUpdateCheckMutation } from "../../store/api/checksApi";
-import { useGetAllProductsQuery } from "../../store/api/productsApi";
+import { SuppliesTable } from "../SuppliesTable/SuppliesTable";
+import { EditableCell } from "../EditableCell/EditableCell";
 
 export const ManagementDistChecks = () => {
   const [open, setOpen] = React.useState(false);
   const [form] = Form.useForm();
 
-  const { data: checksData, refetch: refetchChecks } =
-    useGetAllChecksQuery({
-      type: "RECEPTION",
-    });
-
-  const { data: productsData } = useGetAllProductsQuery();
-
+  const { data: checksData, refetch: refetchChecks } = useGetAllChecksQuery({ type: "RECEPTION" });
   const { data: clientsData } = useGetAllClientsQuery();
-
-  const [updateCheck, { isLoading: isUpdateLoading }] =
-    useUpdateCheckMutation();
-
-  const [deleteCheck, { isLoading: isDeleteLoading }] =
-    useDeleteCheckMutation();
-
+  const [updateCheck, { isLoading: isUpdateLoading }] = useUpdateCheckMutation();
+  const [deleteCheck, { isLoading: isDeleteLoading }] = useDeleteCheckMutation();
   const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
-
-  // const edit = (record) => {
-  //   form.setFieldsValue({ ...record });
-  //   setEditingKey(record.key);
-  // };
 
   const cancel = () => {
     setEditingKey("");
@@ -70,13 +52,13 @@ export const ManagementDistChecks = () => {
 
   const handleDelete = async (key) => {
     const dataSource = [...checksData];
-    const productToDelete = dataSource.find((item) => item.id === key);
+    const checkToDelete = dataSource.find((item) => item.id === key);
 
     try {
-      await deleteCheck(productToDelete.id.toString());
+      await deleteCheck(checkToDelete.id.toString());
       await refetchChecks();
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error("Error deleting check:", error);
     }
   };
 
@@ -90,27 +72,7 @@ export const ManagementDistChecks = () => {
       title: "ID",
       dataIndex: "id",
       width: "8%",
-      sorter: (a, b) => {
-        const codeA = a.id?.toString() || "";
-        const codeB = b.id?.toString() || "";
-        return codeA.localeCompare(codeB);
-      },
-      sortDirections: ["ascend", "descend"],
-    },
-    {
-      title: "Название продукта",
-      dataIndex: "productId",
-      width: "20%",
-      editable: true,
-      render: (productId) => {
-        const product = productsData?.find((emp) => emp.id === productId);
-        return `${product?.name}` || productId;
-      },
-      sorter: (a, b) => {
-        const aClient = productsData?.find((emp) => emp.id === a.id);
-        const bClient = productsData?.find((emp) => emp.id === b.id);
-        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
-      },
+      sorter: (a, b) => a.id - b.id,
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -118,7 +80,7 @@ export const ManagementDistChecks = () => {
       dataIndex: "productQuantity",
       width: "8%",
       editable: true,
-      sorter: (a, b) => a.productQuantity.localeCompare(b.productQuantity),
+      sorter: (a, b) => a.productQuantity - b.productQuantity,
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -127,7 +89,7 @@ export const ManagementDistChecks = () => {
       width: "8%",
       editable: true,
       render: (summary) => `${summary} ₽`,
-      sorter: (a, b) => a.summary.localeCompare(b.summary),
+      sorter: (a, b) => a.summary - b.summary,
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -136,7 +98,7 @@ export const ManagementDistChecks = () => {
       width: "8%",
       editable: true,
       render: (date) => formatDate(date),
-      sorter: (a, b) => a.productQuantity.localeCompare(b.productQuantity),
+      sorter: (a, b) => new Date(a.date) - new Date(b.date),
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -149,9 +111,9 @@ export const ManagementDistChecks = () => {
         return `${client?.companyName}` || clientCode;
       },
       sorter: (a, b) => {
-        const aClient = clientsData?.find((emp) => emp.id === a.id);
-        const bClient = clientsData?.find((emp) => emp.id === b.id);
-        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
+        const aClient = clientsData?.find((emp) => emp.id === a.makerId);
+        const bClient = clientsData?.find((emp) => emp.id === b.makerId);
+        return aClient?.companyName.localeCompare(bClient?.companyName || "");
       },
       sortDirections: ["ascend", "descend"],
     },
@@ -165,9 +127,9 @@ export const ManagementDistChecks = () => {
         return `${client?.companyName}` || clientCode;
       },
       sorter: (a, b) => {
-        const aClient = clientsData?.find((emp) => emp.id === a.id);
-        const bClient = clientsData?.find((emp) => emp.id === b.id);
-        return aClient?.full_name?.localeCompare(bClient?.id || b.id);
+        const aClient = clientsData?.find((emp) => emp.id === a.distributorId);
+        const bClient = clientsData?.find((emp) => emp.id === b.distributorId);
+        return aClient?.companyName.localeCompare(bClient?.companyName || "");
       },
       sortDirections: ["ascend", "descend"],
     },
@@ -179,39 +141,21 @@ export const ManagementDistChecks = () => {
 
         return editable ? (
           <ActionsTableWrapper>
-            <Button
-              onClick={() => save(record.key)}
-              loading={isUpdateLoading}
-              type="primary"
-            >
+            <Button onClick={() => save(record.key)} loading={isUpdateLoading} type="primary">
               Сохранить
             </Button>
-
-            <Popconfirm
-              title="Уверены что хотите отменить действие?"
-              onConfirm={cancel}
-            >
+            <Popconfirm title="Уверены что хотите отменить действие?" onConfirm={cancel}>
               <Button>Отменить</Button>
             </Popconfirm>
           </ActionsTableWrapper>
         ) : (
           <ActionsTableWrapper>
-            {/* <Button
-              disabled={editingKey !== ""}
-              onClick={() => edit(record)}
-              type="primary"
-            >
-              Изменить
-            </Button> */}
-
-            <Popconfirm
-              title="Уверены что хотите удалить чек?"
-              onConfirm={() => handleDelete(record.key)}
-            >
+            <Popconfirm title="Уверены что хотите удалить чек?" onConfirm={() => handleDelete(record.key)}>
               <Button>Удалить</Button>
             </Popconfirm>
-            <a href={`http://localhost:3000/uploads/${record.id}.pdf`} target="_blank">Экспортировать</a>
-
+            <a href={`http://localhost:3000/uploads/${record.id}.pdf`} target="_blank" rel="noopener noreferrer">
+              Экспортировать
+            </a>
           </ActionsTableWrapper>
         );
       },
@@ -255,18 +199,8 @@ export const ManagementDistChecks = () => {
           }}
           bordered
           expandable={{
-            expandedRowRender: (record) => (
-              <ul>
-                {record.characteristics.map((char) => (
-                  <li key={char.id}>
-                    {char.name}: {char.value}
-                  </li>
-                ))}
-              </ul>
-            ),
-            rowExpandable: (record) =>
-              Array.isArray(record.characteristics) &&
-              record.characteristics.length > 0,
+            expandedRowRender: (record) => <SuppliesTable supplies={[record.supply]} />,
+            rowExpandable: (record) => record.supply && record.supply.supplyProducts.length > 0,
           }}
           dataSource={allChecksData}
           columns={mergedColumns}
@@ -274,11 +208,7 @@ export const ManagementDistChecks = () => {
         />
       </Form>
 
-      <CreateDistChecks
-        open={open}
-        setOpen={setOpen}
-        refetchChecks={refetchChecks}
-      />
+      <CreateDistChecks open={open} setOpen={setOpen} refetchChecks={refetchChecks} />
     </>
   );
 };

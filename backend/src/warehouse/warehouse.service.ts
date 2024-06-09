@@ -27,20 +27,26 @@ export class WarehouseService {
   async findAll() {
     const warehouses = await this.db.warehouse.findMany({
       include: {
-        warehouseProducts: {
+        supplies: {
           include: {
-            product: true,
+            supplyProducts: {
+              include: {
+                product: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Фильтрация продуктов, у которых deleted: false
     return warehouses.map((warehouse) => ({
       ...warehouse,
-      warehouseProducts: warehouse.warehouseProducts.filter(
-        (wp) => !wp.product.deleted,
-      ),
+      warehouseSupplies: warehouse.supplies.map((supply) => ({
+        ...supply,
+        supplyProducts: supply.supplyProducts.filter(
+          (supplyProduct) => !supplyProduct.product.deleted,
+        ),
+      })),
     }));
   }
 

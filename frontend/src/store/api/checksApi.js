@@ -20,6 +20,16 @@ export const checksApi = createApi({
       },
     }),
 
+    createDistCheck: builder.mutation({
+      query(data) {
+        return {
+          url: "check/dist",
+          method: "POST",
+          body: data,
+        };
+      },
+    }),
+
     getAllChecks: builder.query({
       query: ({type}) => ({
         url: "check",
@@ -47,6 +57,7 @@ export const checksApi = createApi({
 
 export const {
   useCreateCheckMutation,
+  useCreateDistCheckMutation,
   useGetAllChecksQuery,
   useUpdateCheckMutation,
   useDeleteCheckMutation,

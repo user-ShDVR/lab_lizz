@@ -1,268 +1,302 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCheckDto } from './dto/create-check.dto';
-import { UpdateCheckDto } from './dto/update-check.dto';
 import { PrismaService } from 'src/utils/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { ProductService } from 'src/product/product.service';
 import { GeneratePdfService } from 'src/utils/generate-pdf.service';
 import { CheckType } from '@prisma/client';
+import { CreateDistCheckDto } from './dto/create-Dcheck.dto';
 
 @Injectable()
 export class CheckService {
   constructor(
     private db: PrismaService,
-    private productService: ProductService,
     private userService: UserService,
     private generatePdfService: GeneratePdfService,
   ) {}
   async create(createCheckDto: CreateCheckDto) {
-    if (createCheckDto.type !== 'SALE' && createCheckDto.type !== 'RECEPTION') {
-      throw new BadRequestException('Чек типа RECEPTION или SALE');
+    if (createCheckDto.type !== 'SALE') {
+      throw new BadRequestException('The check is not of type SALE');
     }
-    if (createCheckDto.type === 'SALE' && !createCheckDto.dilerId) {
-      throw new BadRequestException('Укажите Дилера');
+    if (!createCheckDto.dilerId) {
+      throw new BadRequestException(
+        'Dealer ID must be specified for SALE type',
+      );
+    }
+
+    const [distributor, diler] = await Promise.all([
+      this.userService.findOne(createCheckDto.distributorId),
+      this.userService.findOne(createCheckDto.dilerId),
+    ]);
+
+    if (!distributor || distributor.role !== 'DISTRIBUTOR') {
+      throw new BadRequestException(
+        'Distributor is not valid or does not exist',
+      );
+    }
+    if (!diler || diler.role !== 'DILER') {
+      throw new BadRequestException('Dealer is not valid or does not exist');
+    }
+
+    const product = await this.db.product.findFirst({
+      where: {
+        id: createCheckDto.productId,
+        ownerId: createCheckDto.distributorId,
+        deleted: false,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product with the specified owner not found');
+    }
+
+    if (product.quantity < createCheckDto.productQuantity) {
+      throw new BadRequestException('Insufficient product quantity in stock');
+    }
+    try {
+      await this.db.$transaction(async (prisma) => {
+        const remainingQuantity =
+          product.quantity - createCheckDto.productQuantity;
+        const distributorProfit =
+          (createCheckDto.price - product.price) *
+          createCheckDto.productQuantity;
+
+        await prisma.user.updateMany({
+          where: { id: createCheckDto.distributorId },
+          data: { profit: { increment: distributorProfit } },
+        });
+
+        await prisma.distributor.updateMany({
+          where: { id: createCheckDto.distributorId },
+          data: { profit: { increment: distributorProfit } },
+        });
+
+        if (remainingQuantity > 0) {
+          await prisma.product.update({
+            where: { id: product.id },
+            data: { quantity: remainingQuantity },
+          });
+
+          const characteristics = await prisma.characteristic.findMany({
+            where: { productId: product.id },
+          });
+
+          await prisma.product.create({
+            data: {
+              makerId: product.makerId,
+              name: product.name,
+              price: createCheckDto.price,
+              quantity: createCheckDto.productQuantity,
+              ownerId: createCheckDto.dilerId,
+              characteristics: {
+                create: characteristics.map((char) => ({
+                  name: char.name,
+                  value: char.value,
+                  rowKey: char.rowKey,
+                })),
+              },
+            },
+          });
+
+          await prisma.supplyProduct.updateMany({
+            where: { productId: product.id },
+            data: { quantity: remainingQuantity },
+          });
+        } else {
+          await prisma.product.update({
+            where: { id: product.id },
+            data: {
+              ownerId: createCheckDto.dilerId,
+              price: createCheckDto.price,
+            },
+          });
+
+          await prisma.supplyProduct.deleteMany({
+            where: { productId: product.id },
+          });
+        }
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Transaction failed',
+        error.message,
+      );
+    }
+
+    const summary = createCheckDto.price * createCheckDto.productQuantity;
+
+    const check = await this.db.check.create({
+      data: {
+        productQuantity: createCheckDto.productQuantity,
+        productId: createCheckDto.productId,
+        type: createCheckDto.type,
+        distributorId: createCheckDto.distributorId,
+        dilerId: createCheckDto.dilerId,
+        summary: summary,
+      },
+    });
+
+    await this.generatePdfService.generatePDF(check.id);
+
+    return check;
+  }
+  async createDistCheck(createCheckDto: CreateDistCheckDto) {
+    if (createCheckDto.type !== 'RECEPTION') {
+      throw new BadRequestException('Чек типа RECEPTION');
     }
 
     if (createCheckDto.type === 'RECEPTION' && !createCheckDto.makerId) {
       throw new BadRequestException('Укажите Производителя');
     }
+
     const promises = [
       this.userService.findOne(createCheckDto.distributorId),
-      this.userService.findOne(createCheckDto.dilerId),
-      createCheckDto.makerId
-        ? this.userService.findOne(createCheckDto.makerId)
-        : Promise.resolve(null),
-      this.productService.findOne(createCheckDto.productId),
+      this.userService.findOne(createCheckDto.makerId),
     ];
 
-    const [distributor, diler, maker, product] = await Promise.all(promises);
+    const [distributor, maker] = await Promise.all(promises);
 
     if (distributor.role !== 'DISTRIBUTOR') {
       throw new BadRequestException('User is not a DISTRIBUTOR');
-    }
-    if (createCheckDto.dilerId && diler && diler.role !== 'DILER') {
-      throw new BadRequestException('User is not a DILER');
     }
     if (createCheckDto.makerId && maker && maker.role !== 'MAKER') {
       throw new BadRequestException('User is not a MAKER');
     }
 
-    if (createCheckDto.makerId) {
-      const product = await this.db.product.findFirst({
-        where: {
-          id: createCheckDto.productId,
-          ownerId: createCheckDto.makerId,
-          deleted: false,
-        },
-      });
+    const warehouse = await this.db.warehouse.findFirst({
+      where: {
+        id: createCheckDto.warehouseId,
+        distributorId: createCheckDto.distributorId,
+      },
+    });
+    if (!warehouse) {
+      throw new BadRequestException('Склад не найден');
+    }
 
-      if (!product) {
-        throw new BadRequestException(
-          'Продукт не принадлежит данному производителю',
-        );
-      }
-
-      if (product.quantity < createCheckDto.productQuantity) {
-        throw new BadRequestException(
-          'У производиетеля нет такого количества этого продукта',
-        );
-      }
-
-      if (product.quantity > createCheckDto.productQuantity) {
-        const quantity = product.quantity - createCheckDto.productQuantity;
-        await this.db.product.update({
-          where: { id: product.id },
-          data: { quantity: quantity },
+    // Создаем или обновляем продукты и сохраняем их ID
+    const supplyProducts = await Promise.all(
+      createCheckDto.supplyProducts.map(async (sp) => {
+        const originalProduct = await this.db.product.findUnique({
+          where: { id: sp.productId },
+          include: { characteristics: true },
         });
-        const characteristics = await this.db.characteristic.findMany({
-          where: { productId: product.id },
-        });
-        const newDistProduct = await this.db.product.create({
-          data: {
+
+        if (!originalProduct) {
+          throw new BadRequestException('Продукт не найден');
+        }
+
+        const existingProduct = await this.db.product.findFirst({
+          where: {
+            name: originalProduct.name,
             makerId: createCheckDto.makerId,
-            name: product.name,
-            price: createCheckDto.price,
-            quantity: createCheckDto.productQuantity,
             ownerId: createCheckDto.distributorId,
-            characteristics: {
-              create: characteristics.map((char) => ({
-                name: char.name,
-                value: char.value,
-                rowKey: char.rowKey,
-              })),
-            },
+            deleted: false,
           },
         });
-        const warehouse = await this.db.warehouse.findFirst({
-          where: { distributorId: createCheckDto.distributorId },
-        });
-        if (!warehouse) {
-          throw new BadRequestException('Склад не найден');
-        }
-        await this.db.warehouseProduct.create({
-          data: {
-            productId: newDistProduct.id,
-            quantity: createCheckDto.productQuantity,
-            warehouseId: warehouse.id,
-            price: createCheckDto.price,
-          },
-        });
-      }
-      if (product.quantity === createCheckDto.productQuantity) {
-        const newDistProduct = await this.db.product.update({
-          where: { id: product.id },
-          data: {
-            ownerId: createCheckDto.distributorId,
-            price: createCheckDto.price,
-          },
-        });
-        const warehouse = await this.db.warehouse.findFirst({
-          where: { distributorId: createCheckDto.distributorId },
-        });
-        if (!warehouse) {
-          throw new BadRequestException('Склад не найден');
-        }
-        await this.db.warehouseProduct.create({
-          data: {
-            productId: newDistProduct.id,
-            quantity: createCheckDto.productQuantity,
-            warehouseId: warehouse.id,
-            price: createCheckDto.price,
-          },
-        });
-      }
-    }
 
-    if (createCheckDto.dilerId) {
-      const product = await this.db.product.findFirst({
-        where: {
-          id: createCheckDto.productId,
-          ownerId: createCheckDto.distributorId,
-          deleted: false,
-        },
-      });
-
-      if (!product) {
-        throw new NotFoundException('Product with that owner not found');
-      }
-
-      if (product.quantity < createCheckDto.productQuantity) {
-        throw new BadRequestException(
-          'У склада нет такого количества этого продукта',
-        );
-      }
-
-      if (product.quantity > createCheckDto.productQuantity) {
-        const quantity = product.quantity - createCheckDto.productQuantity;
-        // расчитать прибль дистрибьютора
-        const distributorProfit =
-          (createCheckDto.price - product.price) *
-          createCheckDto.productQuantity;
-        await this.db.user.updateMany({
-          where: { id: createCheckDto.distributorId },
-          data: { profit: { increment: distributorProfit } },
-        });
-        await this.db.distributor.updateMany({
-          where: { id: createCheckDto.distributorId },
-          data: { profit: { increment: distributorProfit } },
-        });
-        const updProd = await this.db.product.update({
-          where: { id: product.id },
-          data: { quantity: quantity },
-        });
-        const characteristics = await this.db.characteristic.findMany({
-          where: { productId: product.id },
-        });
-        await this.db.product.create({
-          data: {
-            makerId: updProd.makerId,
-            name: product.name,
-            price: createCheckDto.price,
-            quantity: createCheckDto.productQuantity,
-            ownerId: createCheckDto.dilerId,
-            characteristics: {
-              create: characteristics.map((char) => ({
-                name: char.name,
-                value: char.value,
-                rowKey: char.rowKey,
-              })),
-            },
-          },
-        });
-        const updatedWarehouseProduct =
-          await this.db.warehouseProduct.updateMany({
-            where: { productId: product.id },
-            data: { quantity: quantity },
+        if (existingProduct) {
+          // Обновляем количество существующего продукта
+          await this.db.product.update({
+            where: { id: existingProduct.id },
+            data: { quantity: { increment: sp.quantity } },
           });
-        console.log(updatedWarehouseProduct);
-      }
 
-      if (product.quantity === createCheckDto.productQuantity) {
-        const distributorProfit =
-          (createCheckDto.price - product.price) *
-          createCheckDto.productQuantity;
-        await this.db.user.updateMany({
-          where: { id: createCheckDto.distributorId },
-          data: { profit: { increment: distributorProfit } },
-        });
-        await this.db.distributor.updateMany({
-          where: { id: createCheckDto.distributorId },
-          data: { profit: { increment: distributorProfit } },
-        });
-        await this.db.product.update({
-          where: { id: product.id },
-          data: {
-            ownerId: createCheckDto.dilerId,
-            price: createCheckDto.price,
+          return {
+            productId: existingProduct.id,
+            quantity: sp.quantity,
+            price: sp.price,
+          };
+        } else {
+          // Создаем копию продукта
+          const newProduct = await this.db.product.create({
+            data: {
+              name: originalProduct.name,
+              price: sp.price,
+              makerId: createCheckDto.makerId,
+              ownerId: createCheckDto.distributorId,
+              quantity: sp.quantity,
+              deleted: false,
+              characteristics: {
+                create: originalProduct.characteristics.map((char) => ({
+                  name: char.name,
+                  value: char.value,
+                  rowKey: char.rowKey,
+                })),
+              },
+            },
+          });
+
+          return {
+            productId: newProduct.id,
+            quantity: sp.quantity,
+            price: sp.price,
+          };
+        }
+      }),
+    );
+
+    // Создаем supply и supplyProducts
+    const supply = await this.db.supply.create({
+      data: {
+        date: createCheckDto.date,
+        warehouseId: warehouse.id,
+        supplyProducts: {
+          create: supplyProducts.map((sp) => ({
+            productId: sp.productId,
+            quantity: sp.quantity,
+            price: sp.price,
+          })),
+        },
+      },
+      include: {
+        supplyProducts: {
+          include: {
+            product: true,
           },
-        });
-        await this.db.warehouseProduct.deleteMany({
-          where: { productId: product.id },
-        });
-      }
-    }
-
-    if (createCheckDto.makerId) {
-      const summary = product.price * createCheckDto.productQuantity;
-      const check = await this.db.check.create({
-        data: {
-          productQuantity: createCheckDto.productQuantity,
-          productId: createCheckDto.productId,
-          type: createCheckDto.type,
-          distributorId: createCheckDto.distributorId,
-          dilerId: createCheckDto.dilerId,
-          makerId: createCheckDto.makerId,
-          summary: summary,
         },
-      });
-      await this.generatePdfService.generatePDF(check.id);
+      },
+    });
 
-      return check;
-    } else if (createCheckDto.dilerId) {
-      const summary = createCheckDto.price * createCheckDto.productQuantity;
-      const check = await this.db.check.create({
-        data: {
-          productQuantity: createCheckDto.productQuantity,
-          productId: createCheckDto.productId,
-          type: createCheckDto.type,
-          distributorId: createCheckDto.distributorId,
-          dilerId: createCheckDto.dilerId,
-          summary: summary,
-        },
-      });
-      await this.generatePdfService.generatePDF(check.id);
-      return check;
-    }
+    // Создаем чек
+    const summary = supply.supplyProducts.reduce(
+      (acc, sp) => acc + sp.price * sp.quantity,
+      0,
+    );
+
+    const check = await this.db.check.create({
+      data: {
+        productQuantity: createCheckDto.supplyProducts.reduce(
+          (acc, sp) => acc + sp.quantity,
+          0,
+        ),
+        type: createCheckDto.type,
+        distributorId: createCheckDto.distributorId,
+        makerId: createCheckDto.makerId,
+        summary: summary,
+        supplyId: supply.id,
+      },
+    });
+
+    await this.generatePdfService.generatePDF(check.id);
+
+    return check;
   }
 
   async findAll(checkType: string) {
     return await this.db.check.findMany({
       where: { type: CheckType[checkType] },
-      include: { maker: true, diler: true, distributor: true },
+      include: {
+        maker: true,
+        diler: true,
+        distributor: true,
+        supply: {
+          include: { supplyProducts: { include: { product: true } } },
+        },
+      },
     });
   }
 
@@ -272,63 +306,6 @@ export class CheckService {
       throw new NotFoundException('Check not found');
     }
     return check;
-  }
-
-  async update(id: number, updateCheckDto: UpdateCheckDto) {
-    if (
-      updateCheckDto &&
-      updateCheckDto.type !== 'SALE' &&
-      updateCheckDto.type !== 'RECEPTION'
-    ) {
-      throw new BadRequestException('Check type must be SALE or RECEPTION');
-    }
-    const check = await this.findOne(id);
-
-    const roleChecks = [];
-
-    if (
-      updateCheckDto.productId &&
-      updateCheckDto.productId != check.productId
-    ) {
-      roleChecks.push(this.productService.findOne(updateCheckDto.productId));
-    }
-
-    if (updateCheckDto.makerId && updateCheckDto.makerId != check.makerId) {
-      roleChecks.push(
-        this.userService.findOne(updateCheckDto.makerId).then((user) => {
-          if (user.role != 'MAKER') {
-            throw new BadRequestException('User is not a MAKER');
-          }
-        }),
-      );
-    }
-
-    if (updateCheckDto.dilerId && updateCheckDto.dilerId != check.dilerId) {
-      roleChecks.push(
-        this.userService.findOne(updateCheckDto.dilerId).then((user) => {
-          if (user.role != 'DILER') {
-            throw new BadRequestException('User is not a DILER');
-          }
-        }),
-      );
-    }
-
-    if (
-      updateCheckDto.distributorId &&
-      updateCheckDto.distributorId != check.distributorId
-    ) {
-      roleChecks.push(
-        this.userService.findOne(updateCheckDto.distributorId).then((user) => {
-          if (user.role != 'DISTRIBUTOR') {
-            throw new BadRequestException('User is not a DISTRIBUTOR');
-          }
-        }),
-      );
-    }
-
-    await Promise.all(roleChecks);
-
-    return await this.db.check.update({ where: { id }, data: updateCheckDto });
   }
 
   async remove(id: number) {

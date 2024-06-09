@@ -1,22 +1,25 @@
 import React from "react";
 import { Button, Modal } from "antd";
 import { CreateForm } from "../../../styles/createFormsStyles";
-import { FormInputs } from "./formInputs";
-import { useCreateCheckMutation } from "../../../store/api/checksApi";
+import { FormInputs } from "./FormInputs";
+import { useCreateDistCheckMutation } from "../../../store/api/checksApi";
 
 export const CreateDistChecks = ({ open, setOpen, refetchChecks }) => {
-  const [createCheck, { isLoading }] = useCreateCheckMutation();
+  const [createCheck, { isLoading }] = useCreateDistCheckMutation();
   const [form] = CreateForm.useForm();
 
   const onCreateProductOk = async () => {
     try {
       const checkValues = await form.validateFields();
-      
       await createCheck({
         ...checkValues,
-        price: +checkValues.price,
-        productQuantity: +checkValues.productQuantity,
-        type: "RECEPTION"
+        type: "RECEPTION",
+        date: new Date(),
+        supplyProducts: checkValues.supplyProducts.map(product => ({
+          productId: product.productId,
+          quantity: parseInt(product.quantity),
+          price: parseInt(product.price),
+        })),
       });
 
       setOpen(false);

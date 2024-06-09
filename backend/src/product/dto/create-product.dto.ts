@@ -18,6 +18,7 @@ export class CreateProductDto {
   @ApiProperty({ example: 1000 })
   @IsNumber()
   @IsNotEmpty()
+  @IsOptional()
   price: number;
 
   @ApiProperty({ example: 1 })
@@ -34,6 +35,7 @@ export class CreateProductDto {
   @ApiProperty({ example: 1 })
   @IsNumber()
   @IsNotEmpty()
+  @IsOptional()
   quantity: number;
 
   @ApiProperty({ example: [{ name: 'color', value: 'red', rowKey: '1' }] })

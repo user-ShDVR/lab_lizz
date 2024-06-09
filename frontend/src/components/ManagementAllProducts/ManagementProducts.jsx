@@ -99,15 +99,6 @@ export const ManagementProducts = () => {
       sortDirections: ["ascend", "descend"],
     },
     {
-      title: "Цена",
-      dataIndex: "price",
-      width: "8%",
-      editable: true,
-      render: (text) => `${text} ₽`,
-      sorter: (a, b) => a.price.localeCompare(b.price),
-      sortDirections: ["ascend", "descend"],
-    },
-    {
       title: "Количество",
       dataIndex: "quantity",
       width: "8%",

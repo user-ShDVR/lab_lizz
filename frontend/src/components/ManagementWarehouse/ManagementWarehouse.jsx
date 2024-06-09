@@ -13,24 +13,16 @@ import {
   useGetAllWarehouseQuery,
 } from "../../store/api/warehouseApi";
 import { EditableCell } from "../EditableCell/EditableCell";
-
-import { ProductWTable } from "../ProductWTable/ProductWTable";
+import { SuppliesTable } from "../SuppliesTable/SuppliesTable";
 
 export const ManagementWarehouse = () => {
   const [open, setOpen] = React.useState(false);
   const [form] = Form.useForm();
 
-  const { data: warehousesData, refetch: refetchWarehouse } =
-    useGetAllWarehouseQuery();
-
+  const { data: warehousesData, refetch: refetchWarehouse } = useGetAllWarehouseQuery();
   const { data: clientsData } = useGetAllClientsQuery();
-
-  const [updateWarehouse, { isLoading: isUpdateLoading }] =
-  useUpdateWarehouseMutation();
-
-  const [deleteWarehouse, { isLoading: isDeleteLoading }] =
-    useDeleteWarehouseMutation();
-
+  const [updateWarehouse, { isLoading: isUpdateLoading }] = useUpdateWarehouseMutation();
+  const [deleteWarehouse, { isLoading: isDeleteLoading }] = useDeleteWarehouseMutation();
   const [editingKey, setEditingKey] = React.useState("");
   const isEditing = (record) => record.key === editingKey;
 
@@ -52,13 +44,11 @@ export const ManagementWarehouse = () => {
       if (index > -1) {
         const item = newData[index];
         await updateWarehouse({ id: item.id, data: row });
-
         setEditingKey("");
         refetchWarehouse();
       } else {
         newData.push(row);
         const item = newData[index];
-
         await updateWarehouse({ id: item.id, data: row });
         setEditingKey("");
       }
@@ -91,7 +81,6 @@ export const ManagementWarehouse = () => {
       },
       sortDirections: ["ascend", "descend"],
     },
-
     {
       title: "Название склада",
       dataIndex: "name",
@@ -132,35 +121,19 @@ export const ManagementWarehouse = () => {
 
         return editable ? (
           <ActionsTableWrapper>
-            <Button
-              onClick={() => save(record.key)}
-              loading={isUpdateLoading}
-              type="primary"
-            >
+            <Button onClick={() => save(record.key)} loading={isUpdateLoading} type="primary">
               Сохранить
             </Button>
-
-            <Popconfirm
-              title="Уверены что хотите отменить действие?"
-              onConfirm={cancel}
-            >
+            <Popconfirm title="Уверены что хотите отменить действие?" onConfirm={cancel}>
               <Button>Отменить</Button>
             </Popconfirm>
           </ActionsTableWrapper>
         ) : (
           <ActionsTableWrapper>
-            <Button
-              disabled={editingKey !== ""}
-              onClick={() => edit(record)}
-              type="primary"
-            >
+            <Button disabled={editingKey !== ""} onClick={() => edit(record)} type="primary">
               Изменить
             </Button>
-
-            <Popconfirm
-              title="Уверены что хотите удалить склад?"
-              onConfirm={() => handleDelete(record.key)}
-            >
+            <Popconfirm title="Уверены что хотите удалить склад?" onConfirm={() => handleDelete(record.key)}>
               <Button>Удалить</Button>
             </Popconfirm>
           </ActionsTableWrapper>
@@ -206,8 +179,8 @@ export const ManagementWarehouse = () => {
           }}
           bordered
           expandable={{
-            expandedRowRender: (record) => <ProductWTable products={record.warehouseProducts} />,
-            rowExpandable: (record) => Array.isArray(record.warehouseProducts) && record.warehouseProducts.length > 0,
+            expandedRowRender: (record) => <SuppliesTable supplies={record.warehouseSupplies} />,
+            rowExpandable: (record) => Array.isArray(record.warehouseSupplies) && record.warehouseSupplies.length > 0,
           }}
           dataSource={allWarehousesData}
           columns={mergedColumns}
@@ -215,11 +188,7 @@ export const ManagementWarehouse = () => {
         />
       </Form>
 
-      <CreateWarehouse
-        open={open}
-        setOpen={setOpen}
-        refetchWarehouse={refetchWarehouse}
-      />
+      <CreateWarehouse open={open} setOpen={setOpen} refetchWarehouse={refetchWarehouse} />
     </>
   );
 };

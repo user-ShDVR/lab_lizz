@@ -1,71 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Select } from 'antd';
+import { Input, Select, Button } from 'antd';
 import { CreateForm } from "../../../styles/createFormsStyles";
 import { useGetAllClientsByRoleQuery } from "../../../store/api/clientsApi";
 import { useGetAllProductsByMakerQuery } from '../../../store/api/productsApi';
+import { useGetAllWarehouseQuery } from '../../../store/api/warehouseApi';
 
 export const FormInputs = ({ form }) => {
   const { data: productsData } = useGetAllProductsByMakerQuery();
   const { data: makerData } = useGetAllClientsByRoleQuery({ role: "MAKER" });
   const { data: distributorData } = useGetAllClientsByRoleQuery({ role: "DISTRIBUTOR" });
+  const { data: warehouseData } = useGetAllWarehouseQuery();
 
-  const [selectedProductId, setSelectedProductId] = useState(null);
-  const [selectedMakerName, setSelectedMakerName] = useState('');
-  const [selectedProductPrice, setSelectedProductPrice] = useState(null);
-  
-  const [selectedMakerId, setSelectedMakerId] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+
+  const addProduct = () => {
+    setSelectedProducts([...selectedProducts, { productId: null, price: null, quantity: null }]);
+  };
+
+  const updateProduct = (index, key, value) => {
+    const updatedProducts = [...selectedProducts];
+    updatedProducts[index][key] = value;
+    setSelectedProducts(updatedProducts);
+  };
 
   useEffect(() => {
-    if (selectedProductId && productsData && makerData) {
-      const selectedProduct = productsData.find(product => product.id === selectedProductId);
-      const maker = makerData.find(client => client.id === selectedProduct?.makerId);
-      setSelectedMakerName(maker ? maker.companyName : '');
-      setSelectedMakerId(maker ? maker.id : null);
-      setSelectedProductPrice(selectedProduct ? selectedProduct.price : 0);
-      form.setFieldsValue({ makerId: maker ? maker.id : null });
-      form.setFieldsValue({ price: selectedProduct ? selectedProduct.price : 0 });
-
-    }
-  }, [selectedProductId, productsData, makerData, form]);
+    form.setFieldsValue({ supplyProducts: selectedProducts });
+  }, [selectedProducts, form]);
 
   const formInputs = [
     {
-      label: "Продукт",
-      name: "productId",
+      label: "Склад",
+      name: "warehouseId",
       rules: [
-        { required: true, message: "Пожалуйста, выберите продукт!" },
+        { required: true, message: "Пожалуйста, выберите склад!" },
       ],
-      options: productsData?.map((product) => ({
-        label: product.name,
-        value: product.id,
+      options: warehouseData?.map((warehouse) => ({
+        label: warehouse.name,
+        value: warehouse.id,
       })),
       node: (
-        <Select onChange={value => setSelectedProductId(value)}>
-          {productsData?.map((product) => (
-            <Select.Option key={product.id} value={product.id}>
-              {product.name}
+        <Select>
+          {warehouseData?.map((warehouse) => (
+            <Select.Option key={warehouse.id} value={warehouse.id}>
+              {warehouse.name}
             </Select.Option>
           ))}
         </Select>
       ),
     },
     {
-      label: "Цена за штуку",
-      name: "productPrice",
-      node: <span>{selectedProductPrice} ₽</span>,
-    },
-    {
-      label: "Количество",
-      name: "productQuantity",
-      rules: [
-        { required: true, message: "Пожалуйста, введите количество!" },
-      ],
-      node: <Input type="number" />,
-    },
-    {
       label: "Производитель",
-      name: "makerName",
-      node: <span>{selectedMakerName}</span>,
+      name: "makerId",
+      rules: [
+        { required: true, message: "Пожалуйста, выберите производителя!" },
+      ],
+      options: makerData?.map((client) => ({
+        label: client.companyName,
+        value: client.id,
+      })),
+      node: (
+        <Select>
+          {makerData?.map((client) => (
+            <Select.Option key={client.id} value={client.id}>
+              {client.companyName}
+            </Select.Option>
+          ))}
+        </Select>
+      ),
     },
     {
       label: "Дистрибьютор",
@@ -87,18 +88,44 @@ export const FormInputs = ({ form }) => {
         </Select>
       ),
     },
-    // Скрытое поле для передачи makerId
     {
-      label: "",
-      name: "makerId",
-      rules: [],
-      node: <Input type="hidden" />,
-    },
-    {
-      label: "",
-      name: "price",
-      rules: [],
-      node: <Input type="hidden" />,
+      label: "Продукты",
+      name: "supplyProducts",
+      rules: [
+        { required: true, message: "Пожалуйста, добавьте продукты!" },
+      ],
+      node: (
+        <>
+          {selectedProducts.map((product, index) => (
+            <div key={index}>
+              <Select
+                placeholder="Выберите продукт"
+                value={product.productId}
+                onChange={(value) => updateProduct(index, 'productId', value)}
+              >
+                {productsData?.map((product) => (
+                  <Select.Option key={product.id} value={product.id}>
+                    {product.name}
+                  </Select.Option>
+                ))}
+              </Select>
+              <Input
+                type="number"
+                placeholder="Цена"
+                value={product.price}
+                onChange={(e) => updateProduct(index, 'price', parseInt(e.target.value))}
+              />
+              <Input
+                type="number"
+                placeholder="Количество"
+                value={product.quantity}
+                onChange={(e) => updateProduct(index, 'quantity', parseInt(e.target.value))}
+              />
+            </div>
+          ))}
+          <Button type="dashed" onClick={addProduct}>Добавить продукт</Button>
+        </>
+      ),
     },
   ];
 

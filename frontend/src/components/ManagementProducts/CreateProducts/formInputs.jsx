@@ -22,28 +22,6 @@ export const FormInputs = () => {
       node: <Input />,
     },
     {
-      label: "Цена товара",
-      name: "price",
-      rules: [
-        {
-          required: true,
-          message: "Пожалуйста, введите цену!",
-        },
-      ],
-      node: <Input type="number" />,
-    },
-    {
-      label: "Количество",
-      name: "quantity",
-      rules: [
-        {
-          required: true,
-          message: "Пожалуйста, введите цену!",
-        },
-      ],
-      node: <Input type="number" />,
-    },
-    {
       label: "Производитель",
       name: "makerId",
       rules: [
